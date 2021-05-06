@@ -157,6 +157,9 @@ def random_(size, probability, seed=None, directed=False, selfloop=True):
     """
     # Check network size
     assert size > 1
+    # If seed is not set, use NumPy's global RNG
+    if not seed:
+        seed = np.random
     # Get graph from networkx
     graph = dgl.from_networkx(nx.erdos_renyi_graph(size, probability, seed=seed, directed=directed))
     # Try adding self-loops
@@ -224,6 +227,9 @@ def wattsstrogatz_(size, knn, probability, tries=100, seed=None, selfloop=True):
     assert size > 1
     # Check neighbourhood size
     assert knn > 1
+    # If seed is not set, use NumPy's global RNG
+    if not seed:
+        seed = np.random
     # Get graph from networkx
     graph = dgl.from_networkx(nx.connected_watts_strogatz_graph(size,
                                                                 knn,

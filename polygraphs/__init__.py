@@ -6,6 +6,7 @@ import uuid
 import datetime
 
 import torch
+import numpy as np
 
 from . import hyperparameters as hparams
 from . import metadata
@@ -38,6 +39,16 @@ def _mkdir(results='auto', attempts=10):
     # Create result directory, or raise an exception if it already exists
     os.makedirs(results)
     return results
+
+
+def random(seed=0):
+    """
+    Set random number generator for PolyGraph simulations.
+    """
+    # Set PyTorch random number generator (RNG) for all devices (CPU and CUDA)
+    torch.manual_seed(seed)
+    # Set NumPy RNG
+    np.random.seed(seed)
 
 
 def simulate(params, op=ops.NoOp, **meta):  # pylint: disable=invalid-name
