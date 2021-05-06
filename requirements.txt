@@ -1,0 +1,8 @@
+torch
+dgl
+notebook
+matplotlib
+pylint
+flake8
+PyYaml
+pandas

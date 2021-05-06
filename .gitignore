@@ -1,3 +1,9 @@
+# Polygraphs
+scratchpad.ipynb
+results/
+*.csv
+.vscode/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
