@@ -369,6 +369,9 @@ class PolyGraphHyperParameters(HyperParameters):
     def __init__(self):
         super().__init__()
 
+        # Parameter related to randomness
+        self.add(seed=0)
+
         # Parameters related to learning from neighbours
         self.add(epsilon=0.0)
         self.add(trials=10)
