@@ -82,6 +82,8 @@ def simulate(params, op=ops.NoOp, **meta):  # pylint: disable=invalid-name
                            model,
                            steps=params.simulation.steps,
                            mistrust=params.mistrust,
+                           lowerupper=params.lowerupper,
+                           upperlower=params.upperlower,
                            hooks=hooks)
         results.add(*result)
         log.info('Sim #{:04d}: '
@@ -101,7 +103,13 @@ def simulate(params, op=ops.NoOp, **meta):  # pylint: disable=invalid-name
     return results
 
 
-def simulate_(graph, model, steps=1, hooks=None, mistrust=0):
+def simulate_(graph,
+              model,
+              steps=1,
+              hooks=None,
+              mistrust=0.,
+              lowerupper=0.5,
+              upperlower=0.99):
     """
     Runs a simulation either for a finite number of steps or until convergence.
 
@@ -127,7 +135,13 @@ def simulate_(graph, model, steps=1, hooks=None, mistrust=0):
         if hooks:
             for hook in hooks:
                 hook.mayberun(step, graph)
-        terminated = (converged(graph), polarized(graph, mistrust))
+        # Check termination conditions:
+        # - Has the network converged?
+        # - Is the network polarised?
+        terminated = (
+            converged(graph, upperlower=upperlower, lowerupper=lowerupper),
+            polarized(graph, upperlower=upperlower, lowerupper=lowerupper, mistrust=mistrust)
+        )
         if any(terminated):
             break
     duration = clock.dt()
@@ -135,7 +149,7 @@ def simulate_(graph, model, steps=1, hooks=None, mistrust=0):
         for hook in hooks:
             hook.conclude(step, graph)
     # Which action did the network decide to take?
-    act = consensus(graph)
+    act = consensus(graph, lowerupper=lowerupper)
     # Has the network converged?
     # Is it polarised?
     # How many simulation steps were performed?
@@ -162,7 +176,7 @@ def converged(graph, upperlower=0.5, lowerupper=0.99):
     return result.item()
 
 
-def polarized(graph, mistrust, upperlower=0.5, lowerupper=0.99):
+def polarized(graph, mistrust=0., upperlower=0.5, lowerupper=0.99):
     """
     Returns `True` if graph is polarized.
     """

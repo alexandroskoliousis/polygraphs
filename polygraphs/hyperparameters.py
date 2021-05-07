@@ -343,8 +343,11 @@ class PolyGraphHyperParameters(HyperParameters):
     """
     Configuration parameters include:
 
+        params.seed
         params.epsilon
         params.trials
+        params.lowerupper
+        params.upperlower
 
         params.mistrust
         params.antiupdating
@@ -375,6 +378,10 @@ class PolyGraphHyperParameters(HyperParameters):
         # Parameters related to learning from neighbours
         self.add(epsilon=0.0)
         self.add(trials=10)
+
+        # Parameters related to convergence (upper and lower bounds for beliefs)
+        self.add(lowerupper=0.50)
+        self.add(upperlower=0.99)
 
         # Parameters related to polarisation
         self.add(mistrust=0.0)
