@@ -19,8 +19,11 @@ def _getlogger():
     directory, _ = os.path.split(__file__)
     fname = os.path.join(directory, 'logging.yaml')
     assert os.path.isfile(fname)
-    stream = open(fname, 'r')
-    config = yaml.load(stream, Loader=yaml.CLoader)
+    fstream = open(fname, 'r')
+    try:
+        config = yaml.load(fstream, Loader=yaml.CLoader)
+    finally:
+        config = yaml.load(fstream, Loader=yaml.Loader)
     logging.config.dictConfig(config)
 
     # Reduced warning level name

@@ -4,6 +4,7 @@ PolyGraph module
 import os
 import uuid
 import datetime
+import random as rnd
 
 import torch
 import numpy as np
@@ -49,6 +50,8 @@ def random(seed=0):
     torch.manual_seed(seed)
     # Set NumPy RNG
     np.random.seed(seed)
+    # Set Python RNG
+    rnd.seed(seed)
 
 
 def simulate(params, op=ops.NoOp, **meta):  # pylint: disable=invalid-name
