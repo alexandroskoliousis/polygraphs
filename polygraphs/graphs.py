@@ -135,7 +135,7 @@ def grid_(size, selfloop=True):
     assert size > 1
     # Check network size is a perfect square (approximate solution)
     assert size == math.pow(int(math.sqrt(size) + 0.5), 2)
-    rows = columns = math.sqrt(size)
+    rows = columns = int(math.sqrt(size))
     # Get graph from networkx
     graph = dgl.from_networkx(nx.grid_2d_graph(rows, columns))
     # Try adding self-loops
@@ -258,7 +258,7 @@ def create(params):
     """
     Returns a GDL graph of given type and size.
     """
-    assert isinstance(params, HyperParameters)
+    assert isinstance(params, HyperParameters), 'WTF?!'
     # Create friendly dictionary from list of (name, function) tuples
     members = dict(inspect.getmembers(sys.modules[__name__], inspect.isfunction))
     constructor = members.get(params.kind)
