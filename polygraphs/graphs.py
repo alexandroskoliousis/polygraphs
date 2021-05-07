@@ -8,7 +8,7 @@ import networkx as nx
 import dgl
 import numpy as np
 
-from .hyperparameters import NetworkHyperParameters
+from .hyperparameters import HyperParameters
 
 
 def _buckleup(graph):
@@ -258,7 +258,7 @@ def create(params):
     """
     Returns a GDL graph of given type and size.
     """
-    assert isinstance(params, NetworkHyperParameters)
+    assert isinstance(params, HyperParameters)
     # Create friendly dictionary from list of (name, function) tuples
     members = dict(inspect.getmembers(sys.modules[__name__], inspect.isfunction))
     constructor = members.get(params.kind)
