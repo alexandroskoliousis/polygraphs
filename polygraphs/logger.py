@@ -22,7 +22,7 @@ def _getlogger():
     fstream = open(fname, 'r')
     try:
         config = yaml.load(fstream, Loader=yaml.CLoader)
-    finally:
+    except ImportError:
         config = yaml.load(fstream, Loader=yaml.Loader)
     logging.config.dictConfig(config)
 
