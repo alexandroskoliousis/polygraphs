@@ -5,14 +5,14 @@ import sys
 import inspect
 import torch
 
-from .hyperparameters import InitHyperParameters
+from .hyperparameters import HyperParameters
 
 
 def uniform(size, params=None):
     """
     Fills tensor with values drawn from the uniform distribution U(a, b).
     """
-    assert params and isinstance(params, InitHyperParameters)
+    assert params and isinstance(params, HyperParameters)
     # Create empty tensor of given shape
     tensor = torch.empty(size)
     # Get relevant hyper-parameters
@@ -27,7 +27,7 @@ def gaussian(size, params=None):
     """
     Fills tensor with values drawn from a truncated guassian distribution.
     """
-    assert params and isinstance(params, InitHyperParameters)
+    assert params and isinstance(params, HyperParameters)
     # Create empty tensor of given shape
     tensor = torch.empty(size)
     # Fill auxiliary tensor (one column per attempt)
@@ -53,7 +53,7 @@ def constant(size, params=None):
     """
     Fills tensor with a value.
     """
-    assert params and isinstance(params, InitHyperParameters)
+    assert params and isinstance(params, HyperParameters)
     if isinstance(params.constant.value, list):
         assert size == (len(params.constant.value),)
         tensor = torch.Tensor(params.constant.value)
@@ -104,7 +104,7 @@ def init(size, params):
     """
     Initializes values a tensor of given shape and parameters.
     """
-    assert isinstance(params, InitHyperParameters)
+    assert isinstance(params, HyperParameters)
     # Create friendly dictionary from list of (name, function) tuples
     members = dict(inspect.getmembers(sys.modules[__name__], inspect.isfunction))
     initializer = members.get(params.kind)
