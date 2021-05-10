@@ -11,10 +11,18 @@ import numpy as np
 from .hyperparameters import HyperParameters
 
 
-def _buckleup(graph):
+def _buckleup(graph, exist_ok=False):
     """
     Adds self loops to given graph.
     """
+    if not exist_ok:
+        # The number of edges in the given graph (|E| = m)
+        m = len(graph.edges())
+        # Remove self-loops for each node in the graph
+        graph = dgl.remove_self_loop(graph)
+        # Assert |E'| = |E|
+        assert len(graph.edges()) == m
+    # Add self-loops for each node in the graph and return a new graph
     return dgl.transform.add_self_loop(graph)
 
 
@@ -252,6 +260,36 @@ def wattsstrogatz(params):
                           tries=params.wattsstrogatz.tries,
                           seed=params.wattsstrogatz.seed,
                           selfloop=params.selfloop)
+
+
+def barabasialbert_(size, attachments, seed=None, selfloop=True):
+    """
+    Returns a random graph according to the Barabasi–Albert preferential attachment model.
+    """
+    # Check network size
+    assert size > 1
+    # Check neighbourhood size
+    assert attachments > 0
+    # If seed is not set, use NumPy's global RNG
+    if not seed:
+        seed = np.random
+    # Get graph from networkx
+    graph = dgl.from_networkx(nx.barabasi_albert_graph(size, attachments, seed=seed))
+    # Try adding self-loops
+    if selfloop:
+        graph = _buckleup(graph)
+    return graph
+
+
+def barabasialbert(params):
+    """
+    Returns a random graph according to the Barabasi–Albert
+    preferential attachment model from hyper-parameters.
+    """
+    return barabasialbert_(params.size,
+                           params.barabasialbert.attachments,
+                           seed=params.barabasialbert.seed,
+                           selfloop=params.selfloop)
 
 
 def create(params):
