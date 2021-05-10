@@ -290,6 +290,14 @@ class NetworkHyperParameters(HyperParameters):
 
         params.random.seed
         params.random.probability
+
+        params.wattsstrogatz.knn
+        params.wattsstrogatz.seed
+        params.wattsstrogatz.tries
+        params.wattsstrogatz.probability
+
+        params.barabasialbert.attachments
+        params.barabasialbert.seed
     """
     def __init__(self):
         super().__init__()
@@ -304,6 +312,8 @@ class NetworkHyperParameters(HyperParameters):
                                                seed=None,
                                                tries=100,
                                                probability=1.0))
+        self.add(barabasialbert=HyperParameters(attachments=1,
+                                                seed=None))
 
 
 class InitHyperParameters(HyperParameters):
