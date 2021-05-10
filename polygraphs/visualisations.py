@@ -61,7 +61,7 @@ def draw(graph, figsize=None, layout=None, **kwargs):
 
 def animate(graph, frames, filename=None, fps=1, figsize=None, layout=None, **kwargs):
     """
-    Animate a graph.
+    Animates a PolygGraph.
     """
     # Sort out destination file
     if not filename:
@@ -76,18 +76,17 @@ def animate(graph, frames, filename=None, fps=1, figsize=None, layout=None, **kw
     # Movie writer
     writer = PillowWriter(fps=fps) if ext == 'gif' else FFMpegWriter(fps=fps)
 
-    # Export beliefs from graph node attributes, if present
-    if 'belief' in graph.ndata:
-        beliefs = graph.ndata.get('belief').numpy()
-    else:
-        beliefs = np.zeros(graph.num_nodes())
+    # Export beliefs from graph node attributes, otherwise raise an exception
+    beliefs = graph.ndata.get('belief').numpy()
     # Add latest beliefs to the right side of the deque
     frames.append(beliefs)
+
     # Convert DGL graph to NetworkX graph
     G = dgl.to_networkx(graph)  # pylint: disable=invalid-name
+
     # Set plot
     fig, ax = plt.subplots(figsize=figsize)  # pylint: disable=invalid-name
-    # Map scalars to RGBA
+    # Map scalar data to RGBA
     mapper = plt.cm.ScalarMappable(cmap=plt.cm.coolwarm)  # pylint: disable=no-member
     # Show colorbar
     fig.colorbar(mapper)
