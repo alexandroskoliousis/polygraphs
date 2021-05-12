@@ -9,6 +9,7 @@ import dgl
 import numpy as np
 
 from .hyperparameters import HyperParameters
+from . import datasets
 
 
 def _buckleup(graph, exist_ok=False):
@@ -16,12 +17,12 @@ def _buckleup(graph, exist_ok=False):
     Adds self loops to given graph.
     """
     if not exist_ok:
-        # The number of edges in the given graph (|E| = m)
-        m = len(graph.edges())
-        # Remove self-loops for each node in the graph
+        # The number of edges in the given graph
+        count = len(graph.edges())
+        # Remove all self-loops in the graph, if present
         graph = dgl.remove_self_loop(graph)
         # Assert |E'| = |E|
-        assert len(graph.edges()) == m
+        assert len(graph.edges()) == count
     # Add self-loops for each node in the graph and return a new graph
     return dgl.transform.add_self_loop(graph)
 
@@ -290,6 +291,25 @@ def barabasialbert(params):
                            params.barabasialbert.attachments,
                            seed=params.barabasialbert.seed,
                            selfloop=params.selfloop)
+
+
+def snap(params):
+    """
+    Returns a SNAP dataset, identified by `params.snap.name`.
+    """
+    return datasets.snap.getbyname(params.snap.name).read()
+
+
+def ogb(params):
+    """
+    Returns an OGB dataset, identified by `params.ogb.name`.
+    Current only one dataset is supported, ogbl-collab.
+    """
+    assert params.ogb.name and isinstance(params.ogb.name, str)
+    assert params.ogb.name.lower == 'collab'
+    dataset = datasets.ogb.Collab()
+    graph = dataset.read()
+    return graph
 
 
 def create(params):
