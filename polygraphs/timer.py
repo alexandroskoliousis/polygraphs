@@ -6,6 +6,8 @@ import time
 
 
 class Timer:
+    # pylint: disable=invalid-name
+    # dt, t0, etc.
     """
     Utility for timing measurements
     """
