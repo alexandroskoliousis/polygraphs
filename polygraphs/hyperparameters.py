@@ -298,6 +298,9 @@ class NetworkHyperParameters(HyperParameters):
 
         params.barabasialbert.attachments
         params.barabasialbert.seed
+
+        params.snap.name
+        params.ogb.name
     """
     def __init__(self):
         super().__init__()
@@ -314,6 +317,9 @@ class NetworkHyperParameters(HyperParameters):
                                                probability=1.0))
         self.add(barabasialbert=HyperParameters(attachments=1,
                                                 seed=None))
+        # Adding support for datasets
+        self.add(snap=HyperParameters(name=None))
+        self.add(ogb=HyperParameters(name='collab'))
 
 
 class InitHyperParameters(HyperParameters):
