@@ -45,6 +45,8 @@ def sample(params):
     """
     Returns a sample 6-node graph from hyper-parameters.
     """
+    # Update network size
+    params.size = 6
     return sample_(selfloop=params.selfloop)
 
 
@@ -229,6 +231,8 @@ def karate(params):
     """
     Returns Zachary's Karate club social network from hyper-parameters.
     """
+    # Update network size
+    params.size = 34
     return karate_(selfloop=params.selfloop)
 
 
@@ -307,7 +311,10 @@ def snap(params):
     """
     Returns a SNAP dataset, identified by `params.snap.name`.
     """
-    return datasets.snap.getbyname(params.snap.name).read()
+    graph = datasets.snap.getbyname(params.snap.name).read()
+    # Update network size
+    params.size = graph.num_nodes()
+    return graph
 
 
 def ogb(params):
@@ -319,6 +326,8 @@ def ogb(params):
     assert params.ogb.name.lower == "collab"
     dataset = datasets.ogb.Collab()
     graph = dataset.read()
+    # Update network size
+    params.size = graph.num_nodes()
     return graph
 
 
