@@ -1,6 +1,6 @@
 # PolyGraphs
 
-Philosophical simulations (epistemology)
+Learning from neighbours
 
 ## Getting started
 
