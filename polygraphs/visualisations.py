@@ -34,9 +34,7 @@ def draw(graph, figsize=None, layout=None, **kwargs):
     if "belief" in graph.ndata:
         beliefs = graph.ndata.get("belief").numpy()
     else:
-        print("Beliefs not found")
         beliefs = np.zeros(graph.num_nodes())
-    print(beliefs)
     # Convert DGL graph to NetworkX graph
     G = dgl.to_networkx(graph)  # pylint: disable=invalid-name
     # Plot
