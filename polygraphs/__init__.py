@@ -20,25 +20,31 @@ from . import timer
 
 log = logger.getlogger()
 
+# Cache data directory for all results
+_RESULTCACHE = "~/polygraphs-cache/results"
 
-def _mkdir(results='auto', attempts=10):
+
+def _mkdir(results="auto", attempts=10):
     """
     Creates unique directory to store simulation results.
     """
-    if results == 'auto':
-        head = 'results/simulations/'
-        date = datetime.date.today().strftime('%Y-%m-%d')
+    if results == "auto":
+        head = _RESULTCACHE
+        date = datetime.date.today().strftime("%Y-%m-%d")
         for attempt in range(attempts):
             # Generate unique id
-            results = os.path.join(head, date, uuid.uuid4().hex)
+            results = os.path.join(os.path.expanduser(head), date, uuid.uuid4().hex)
             # Likely
             if not os.path.isdir(results):
                 break
         # Unlikely error
-        assert attempt + 1 < attempts, f'Failed to generate unique id after {attempts} attempts'
+        assert (
+            attempt + 1 < attempts
+        ), f"Failed to generate unique id after {attempts} attempts"
 
     # Create result directory, or raise an exception if it already exists
     os.makedirs(results)
+
     return results
 
 
@@ -67,7 +73,7 @@ def simulate(params, op=ops.NoOp, **meta):  # pylint: disable=invalid-name
     results = metadata.PolyGraphSimulation(**meta)
     # Run multiple simulations and collect results
     for idx in range(params.simulation.repeats):
-        log.debug('Simulation #{:04d} starts'.format(idx + 1))
+        log.debug("Simulation #{:04d} starts".format(idx + 1))
         # Create a DGL graph with given configuration
         graph = graphs.create(params.network)
         # Create a model with given configuration
@@ -78,20 +84,24 @@ def simulate(params, op=ops.NoOp, **meta):  # pylint: disable=invalid-name
         else:
             hooks = None
         # Run simulation
-        result = simulate_(graph,
-                           model,
-                           steps=params.simulation.steps,
-                           mistrust=params.mistrust,
-                           lowerupper=params.lowerupper,
-                           upperlower=params.upperlower,
-                           hooks=hooks)
+        result = simulate_(
+            graph,
+            model,
+            steps=params.simulation.steps,
+            mistrust=params.mistrust,
+            lowerupper=params.lowerupper,
+            upperlower=params.upperlower,
+            hooks=hooks,
+        )
         results.add(*result)
-        log.info('Sim #{:04d}: '
-                 '{:6d} steps '
-                 '{:7.2f}s; '
-                 'action: {:1s} '
-                 'converged: {:<1} '
-                 'polarized: {:<1} '.format(idx + 1, *result))
+        log.info(
+            "Sim #{:04d}: "
+            "{:6d} steps "
+            "{:7.2f}s; "
+            "action: {:1s} "
+            "converged: {:<1} "
+            "polarized: {:<1} ".format(idx + 1, *result)
+        )
     # End repeats
     # Store simulation results, configuration and other metadata
     # Create destination directory (if not exists)
@@ -103,13 +113,9 @@ def simulate(params, op=ops.NoOp, **meta):  # pylint: disable=invalid-name
     return results
 
 
-def simulate_(graph,
-              model,
-              steps=1,
-              hooks=None,
-              mistrust=0.,
-              lowerupper=0.5,
-              upperlower=0.99):
+def simulate_(
+    graph, model, steps=1, hooks=None, mistrust=0.0, lowerupper=0.5, upperlower=0.99
+):
     """
     Runs a simulation either for a finite number of steps or until convergence.
 
@@ -120,6 +126,7 @@ def simulate_(graph,
             c) whether the network has converged or not
             d) whether the network is polarised or not
     """
+
     def cond(step):
         return step < steps if steps else True
 
@@ -140,7 +147,9 @@ def simulate_(graph,
         # - Is the network polarised?
         terminated = (
             converged(graph, upperlower=upperlower, lowerupper=lowerupper),
-            polarized(graph, upperlower=upperlower, lowerupper=lowerupper, mistrust=mistrust)
+            polarized(
+                graph, upperlower=upperlower, lowerupper=lowerupper, mistrust=mistrust
+            ),
         )
         if any(terminated):
             break
@@ -154,7 +163,11 @@ def simulate_(graph,
     # Is it polarised?
     # How many simulation steps were performed?
     # How long did the simulation take?
-    return (step, duration, act,) + terminated
+    return (
+        step,
+        duration,
+        act,
+    ) + terminated
 
 
 def consensus(graph, lowerupper=0.99):
@@ -162,36 +175,41 @@ def consensus(graph, lowerupper=0.99):
     Returns action ('A', 'B', or '?') agreed by all agents in the network.
     """
     if converged(graph, lowerupper=lowerupper):
-        belief = graph.ndata['belief']
-        return 'B' if torch.all(torch.gt(belief, lowerupper)) else 'A'
-    return '?'
+        belief = graph.ndata["belief"]
+        return "B" if torch.all(torch.gt(belief, lowerupper)) else "A"
+    return "?"
 
 
 def converged(graph, upperlower=0.5, lowerupper=0.99):
     """
     Returns `True` if graph has converged.
     """
-    tensor = graph.ndata['belief']
-    result = torch.all(torch.gt(tensor, lowerupper)) or torch.all(torch.le(tensor, upperlower))
+    tensor = graph.ndata["belief"]
+    result = torch.all(torch.gt(tensor, lowerupper)) or torch.all(
+        torch.le(tensor, upperlower)
+    )
     return result.item()
 
 
-def polarized(graph, mistrust=0., upperlower=0.5, lowerupper=0.99):
+def polarized(graph, mistrust=0.0, upperlower=0.5, lowerupper=0.99):
     """
     Returns `True` if graph is polarized.
     """
     if not mistrust:
         return False
-    tensor = graph.ndata['belief']
+    tensor = graph.ndata["belief"]
     # All nodes have decided which action to take (e.g. A or B)
-    c = torch.all(torch.gt(tensor, lowerupper) | torch.le(tensor, upperlower))  # pylint: disable=invalid-name
+    c = torch.all(
+        torch.gt(tensor, lowerupper) | torch.le(tensor, upperlower)
+    )  # pylint: disable=invalid-name
     # There is at least one strong believer
     # that action B is better
     b = torch.any(torch.gt(tensor, lowerupper))  # pylint: disable=invalid-name
     # There is at least one disbeliever
     a = torch.any(torch.le(tensor, upperlower))  # pylint: disable=invalid-name
     if a and b and c:
-        delta = torch.min(tensor[torch.gt(tensor, lowerupper)]) - \
-                torch.max(tensor[torch.le(tensor, upperlower)])
+        delta = torch.min(tensor[torch.gt(tensor, lowerupper)]) - torch.max(
+            tensor[torch.le(tensor, upperlower)]
+        )
         return torch.ge(delta * mistrust, 1).item()
     return False

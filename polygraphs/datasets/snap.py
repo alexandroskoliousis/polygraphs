@@ -11,13 +11,14 @@ import dgl
 from .dataset import PolyGraphDataset
 
 
-_SNAP = 'https://snap.stanford.edu'
+_SNAP = "https://snap.stanford.edu"
 
 
 class SNAPDataset(PolyGraphDataset):
     """
     SNAP dataset
     """
+
     def __init__(self, folder, directed=True, edges=None, **extra):
 
         # Lookup table for normalising node identifier to 0 to N
@@ -27,7 +28,7 @@ class SNAPDataset(PolyGraphDataset):
 
     @property
     def collection(self):
-        return 'snap'
+        return "snap"
 
     def __read_edges(self):
         """
@@ -37,10 +38,12 @@ class SNAPDataset(PolyGraphDataset):
         src, dst = deque(), deque()
 
         # Read gzip file as txt
-        with gzip.open(self.edges.origin, mode='rt') as txt:  # pylint: disable=no-member
+        with gzip.open(
+            self.edges.origin, mode="rt"
+        ) as txt:  # pylint: disable=no-member
             for line in txt:
                 # Ignore comments
-                if line.startswith('#'):
+                if line.startswith("#"):
                     continue
                 # Each line has two numbers,
                 # the source and destination
@@ -67,7 +70,9 @@ class SNAPDataset(PolyGraphDataset):
         src, dst = self.__read_edges()
 
         # Create DGL graph from edges
-        return dgl.graph((torch.Tensor(src).to(torch.int64), torch.Tensor(dst).to(torch.int64)))
+        return dgl.graph(
+            (torch.Tensor(src).to(torch.int64), torch.Tensor(dst).to(torch.int64))
+        )
 
 
 class Twitter2010(SNAPDataset):
@@ -83,9 +88,11 @@ class Twitter2010(SNAPDataset):
 
         - The network is directed.
     """
+
     def __init__(self):
-        super().__init__(folder='twitter-2010',
-                         edges=urljoin(_SNAP, 'data/twitter-2010.txt.gz'))
+        super().__init__(
+            folder="twitter-2010", edges=urljoin(_SNAP, "data/twitter-2010.txt.gz")
+        )
 
 
 class EgoTwitter(SNAPDataset):
@@ -101,9 +108,11 @@ class EgoTwitter(SNAPDataset):
 
         - The network is directed.
     """
+
     def __init__(self):
-        super().__init__(folder='ego-twitter',
-                         edges=urljoin(_SNAP, 'data/twitter_combined.txt.gz'))
+        super().__init__(
+            folder="ego-twitter", edges=urljoin(_SNAP, "data/twitter_combined.txt.gz")
+        )
 
 
 class EgoFacebook(SNAPDataset):
@@ -119,10 +128,13 @@ class EgoFacebook(SNAPDataset):
 
         - The network is undirected.
     """
+
     def __init__(self):
-        super().__init__(folder='ego-facebook',
-                         directed=False,
-                         edges=urljoin(_SNAP, 'data/facebook_combined.txt.gz'))
+        super().__init__(
+            folder="ego-facebook",
+            directed=False,
+            edges=urljoin(_SNAP, "data/facebook_combined.txt.gz"),
+        )
 
 
 class LiveJournal1(SNAPDataset):
@@ -138,9 +150,12 @@ class LiveJournal1(SNAPDataset):
 
         - The network is directed.
     """
+
     def __init__(self):
-        super().__init__(folder='soc-livejournal',
-                         edges=urljoin(_SNAP, 'data/soc-LiveJournal1.txt.gz'))
+        super().__init__(
+            folder="soc-livejournal",
+            edges=urljoin(_SNAP, "data/soc-LiveJournal1.txt.gz"),
+        )
 
 
 class LiveJournal(SNAPDataset):
@@ -157,12 +172,15 @@ class LiveJournal(SNAPDataset):
 
         - The network is undirected.
     """
+
     def __init__(self):
         # pylint: disable=line-too-long
-        super().__init__(folder='com-livejournal',
-                         directed=False,
-                         edges=urljoin(_SNAP, 'data/bigdata/communities/com-lj.ungraph.txt.gz'),
-                         top5K=urljoin(_SNAP, 'data/bigdata/communities/com-lj.top5000.cmty.txt.gz'))
+        super().__init__(
+            folder="com-livejournal",
+            directed=False,
+            edges=urljoin(_SNAP, "data/bigdata/communities/com-lj.ungraph.txt.gz"),
+            top5K=urljoin(_SNAP, "data/bigdata/communities/com-lj.top5000.cmty.txt.gz"),
+        )
 
     def read(self, **kwargs):
 
@@ -175,25 +193,27 @@ class LiveJournal(SNAPDataset):
         group = np.zeros((graph.num_nodes(), 5000), dtype=np.ubyte)
 
         # Read top-5000 communities
-        with gzip.open(self.top5K.origin, mode='rt') as txt:  # pylint: disable=no-member
+        with gzip.open(
+            self.top5K.origin, mode="rt"
+        ) as txt:  # pylint: disable=no-member
             for j, line in enumerate(txt):
                 # Ignore comments
-                if line.startswith('#'):
+                if line.startswith("#"):
                     continue
                 # Each line contains a list of numbers, indicating which nodes
                 # belong to the j-th community
                 community = list(map(int, line.split()))
                 for node in community:
                     # All node ids should be present in the translation table
-                    assert node in self.tbl
+                    # assert node in self.tbl
                     # Get canonical index
                     i = self.tbl[node]
                     # Each entry should be unique (thus set once)
-                    assert not group[i][j]
+                    # assert not group[i][j]
                     group[i][j] = 1
 
         # Set node features
-        graph.ndata['group'] = torch.from_numpy(group)
+        graph.ndata["group"] = torch.from_numpy(group)
 
         return graph
 
@@ -209,7 +229,8 @@ def getbyname(name):
             if name.lower() == obj.__name__.lower():
                 return obj
         return None
+
     datasetcls = _find()
     if datasetcls is None:
-        raise Exception(f'Invalid SNAP dataset name: {name}')
+        raise Exception(f"Invalid SNAP dataset name: {name}")
     return datasetcls()

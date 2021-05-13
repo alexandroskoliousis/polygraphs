@@ -9,13 +9,14 @@ import six
 from . import utils as datautils
 
 # Cache data directory for all datasets
-_DATACACHE = '~/polygraphs-cache/data'
+_DATACACHE = "~/polygraphs-cache/data"
 
 
 class PolyGraphDatasetFile:
     """
     A dataset file (either remote, local, or a local copy)
     """
+
     def __init__(self, origin):
         # File origin must be a string
         assert isinstance(origin, str)
@@ -30,11 +31,11 @@ class PolyGraphDatasetFile:
                 ctx = urllib.request.urlopen(origin)
                 ctx.close()
             except urllib.error.URLError as err:
-                raise Exception('Invalid file origin: {}'.format(origin)) from err
+                raise Exception("Invalid file origin: {}".format(origin)) from err
         else:
             # Ensure origin is a valid file
             if not os.path.isfile(origin):
-                raise Exception('Invalid file origin: {}'.format(origin))
+                raise Exception("Invalid file origin: {}".format(origin))
 
     @property
     def origin(self):
@@ -67,7 +68,9 @@ class PolyGraphDatasetFile:
         # Ensure local folder exists
         assert os.path.isdir(folder)
         # Construct destination file
-        filename = os.path.join(folder, os.path.basename(urllib.parse.urlparse(self.origin).path))
+        filename = os.path.join(
+            folder, os.path.basename(urllib.parse.urlparse(self.origin).path)
+        )
         # Maybe download file
         datautils.download(self.origin, filename)
         # File no longer considered remote
@@ -80,10 +83,11 @@ class PolyGraphDataset(metaclass=abc.ABCMeta):
     """
     Base class from which all datasets are derived
     """
+
     def __init__(self, folder=None, directed=True, **kwargs):
 
         # Ensure local folder is set and it does not start with a tilde
-        folder = os.path.expanduser(folder or '.')
+        folder = os.path.expanduser(folder or ".")
 
         # Expand local folder, if path is relative
         if not os.path.isabs(folder):

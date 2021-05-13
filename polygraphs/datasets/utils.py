@@ -3,15 +3,19 @@ PolyGraph dataset utils
 """
 import os
 import sys
+
 # For downloads
 import urllib
+
 # For unzip
 import zipfile
+
 # For copy
 import shutil
 
 # Import timer
 from ..timer import Timer
+
 # Import logger
 from ..logger import getlogger
 
@@ -22,6 +26,7 @@ class _ProgressBar:  # pylint: disable=too-few-public-methods
     """
     Reports download progress.
     """
+
     def __init__(self, slots=10):
         # Maximum number of slots
         self.slots = slots
@@ -39,11 +44,11 @@ class _ProgressBar:  # pylint: disable=too-few-public-methods
         # Check that the file size is a valid number (excl. older FTP servers)
         assert fs > 0
         # Download progress thus far, a number between 0 and 1
-        progress = min(float(nb * bs) / float(fs), 1.)
+        progress = min(float(nb * bs) / float(fs), 1.0)
         # We report progress every in fixed increments, determined by the number of slots
         slot = int(progress * self.slots)
         if slot > self.previous:
-            report = '[{:10s}] {:5.1f}\n'.format('=' * slot, 100. * progress)
+            report = "[{:10s}] {:5.1f}\n".format("=" * slot, 100.0 * progress)
             sys.stdout.write(report)
             self.previous = slot
 
@@ -54,12 +59,14 @@ def download(url, filename):
     """
     if os.path.isfile(filename):
         # File already exists; do not download
-        log.info('File \'%s\' already exists', filename)
+        log.info("File '%s' already exists", filename)
         return
 
     # Pretty print download message
     components = urllib.parse.urlparse(url)
-    log.info('Downloading \'%s\' from %s', os.path.basename(components.path), components.netloc)
+    log.info(
+        "Downloading '%s' from %s", os.path.basename(components.path), components.netloc
+    )
 
     # Create rudimentary progress bar (and report hook)
     reporter = _ProgressBar()
@@ -77,7 +84,7 @@ def download(url, filename):
         if os.path.exists(filename):
             os.remove(filename)
         raise
-    log.info('Download complete (%.2fs)', clock.dt())
+    log.info("Download complete (%.2fs)", clock.dt())
 
 
 def unzip(filename, folder=None):
@@ -96,18 +103,18 @@ def unzip(filename, folder=None):
 
     # Create destination folder, if not exists
     if not os.path.isdir(folder):
-        log.info('Creating directory %s', folder)
+        log.info("Creating directory %s", folder)
         os.makedirs(folder)
 
     # Pretty print unzip message
-    log.info('Extracting \'%s\'', tail)
+    log.info("Extracting '%s'", tail)
 
     # Extract contents to destination
     clock = Timer()
     clock.start()
-    with zipfile.ZipFile(filename, 'r') as ctx:
+    with zipfile.ZipFile(filename, "r") as ctx:
         ctx.extractall(folder)
-    log.info('Unzip complete (%.2fs)', clock.dt())
+    log.info("Unzip complete (%.2fs)", clock.dt())
 
 
 def copy(source, destination):

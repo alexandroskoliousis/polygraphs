@@ -31,7 +31,7 @@ def gaussian(size, params=None):
     # Create empty tensor of given shape
     tensor = torch.empty(size)
     # Fill auxiliary tensor (one column per attempt)
-    aux = torch.empty(tensor.shape + (params.gaussian.attempts, ))
+    aux = torch.empty(tensor.shape + (params.gaussian.attempts,))
     torch.nn.init.normal_(aux, mean=params.gaussian.mean, std=params.gaussian.std)
     # Find valid values
     valid = torch.gt(aux, params.gaussian.lower) & torch.lt(aux, params.gaussian.upper)
@@ -44,8 +44,10 @@ def gaussian(size, params=None):
     lower = params.gaussian.lower
     upper = params.gaussian.upper
     if not torch.all((tensor > lower) & (tensor < upper)):
-        raise Exception(f'Failed to truncate N({params.gaussian.mean}, {params.gaussian.std}) '
-                        f'to ({lower}, {upper})')
+        raise Exception(
+            f"Failed to truncate N({params.gaussian.mean}, {params.gaussian.std}) "
+            f"to ({lower}, {upper})"
+        )
     return tensor
 
 
@@ -109,5 +111,5 @@ def init(size, params):
     members = dict(inspect.getmembers(sys.modules[__name__], inspect.isfunction))
     initializer = members.get(params.kind)
     if initializer is None:
-        raise Exception(f'Invalid initializer type: {params.kind}')
+        raise Exception(f"Invalid initializer type: {params.kind}")
     return initializer(size, params=params)

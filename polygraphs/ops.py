@@ -9,6 +9,7 @@ from . import init
 
 # Bayes rule operations
 
+
 def _Pr(q, a, b):  # pylint: disable=invalid-name
     """
     An agent observes evidence that consists of `a` successful signals (with probability `q`)
@@ -37,24 +38,27 @@ class PolyGraphOp(torch.nn.Module, metaclass=abc.ABCMeta):
     """
     Base operator, from which all other operators are derived.
     """
+
     def __init__(self, graph, params):
         super().__init__()
 
         # The shape of all node attributes
-        size = (graph.num_nodes(), )
+        size = (graph.num_nodes(),)
 
         # Node beliefs that action B is better
-        graph.ndata['belief'] = init.init(size, params.init).double()
+        graph.ndata["belief"] = init.init(size, params.init).double()
         # Action B yields Bernoulli payoff of 1 (success) with probability p (= 0.5 + e)
         probs = init.halfs(size) + params.epsilon
         # Number of Bernoulli trials
         count = init.zeros(size) + params.trials
         # Each node gets a private signal that provides information
         # about whether action B is indeed a good action
-        self._sampler = torch.distributions.binomial.Binomial(total_count=count, probs=probs)
+        self._sampler = torch.distributions.binomial.Binomial(
+            total_count=count, probs=probs
+        )
 
         # Store action B's probability of success as a graph node attribute
-        graph.ndata['probability'] = probs
+        graph.ndata["probability"] = probs
 
     def _sample(self):
         """
@@ -74,7 +78,7 @@ class PolyGraphOp(torch.nn.Module, metaclass=abc.ABCMeta):
         observe the payoffs from following action B by sampling a binomial distribution.
         """
         # Consider only nodes who believe action B is better
-        mask = graph.ndata['belief'] > 0.5
+        mask = graph.ndata["belief"] > 0.5
         # Repeat mask
         mask = mask.tile((2, 1))
         # Sample distribution (a node observes only a few successful trials out of all trials)
@@ -83,7 +87,7 @@ class PolyGraphOp(torch.nn.Module, metaclass=abc.ABCMeta):
         # Apply mask
         result = result * mask
         # Store per-node payoffs as a graph node attribute
-        graph.ndata['payoff'] = result.T
+        graph.ndata["payoff"] = result.T
 
     @staticmethod
     def filterfn(edges):
@@ -133,6 +137,7 @@ class NoOp(PolyGraphOp):
     """
     No operator
     """
+
     @staticmethod
     def messagefn(edges):  # pylint: disable=unused-argument
         """
@@ -152,27 +157,28 @@ class BalaGoyalOp(PolyGraphOp):
     """
     Learning from neighbours (Bala & Goyal, 1998)
     """
+
     @staticmethod
     def filterfn(edges):
         """
         Filter function
         """
         # Filter out edges whose source has no evidence to report
-        return torch.gt(edges.src['payoff'][:, 1], 0.)
+        return torch.gt(edges.src["payoff"][:, 1], 0.0)
 
     @staticmethod
     def messagefn(edges):
         """
         Message function
         """
-        return {'payoff': edges.src['payoff']}
+        return {"payoff": edges.src["payoff"]}
 
     @staticmethod
     def reducefn(nodes):
         """
         Reduce function
         """
-        return {'payoff': torch.sum(nodes.mailbox['payoff'], dim=1)}
+        return {"payoff": torch.sum(nodes.mailbox["payoff"], dim=1)}
 
     @staticmethod
     def applyfn(nodes):
@@ -180,13 +186,13 @@ class BalaGoyalOp(PolyGraphOp):
         Update function
         """
         # Probability that action B is successful
-        probability = nodes.data['probability']
+        probability = nodes.data["probability"]
         # A node observes evidence E denoting the number of
         # successful trials and the total number of trials
-        success = nodes.data['payoff'][:, 0]
-        failure = nodes.data['payoff'][:, 1] - success
+        success = nodes.data["payoff"][:, 0]
+        failure = nodes.data["payoff"][:, 1] - success
         # Prior, P(H) (aka. belief that B is better)
-        prior = nodes.data['belief']
+        prior = nodes.data["belief"]
         # Marginal likelyhood, P(E)
         marginal = _marginal(prior, probability, success, failure)
         # Likelyhood, P(E|H)
@@ -195,23 +201,26 @@ class BalaGoyalOp(PolyGraphOp):
         posterior = prior * likelyhood / marginal
 
         # Update node attribute
-        return {'belief': posterior}
+        return {"belief": posterior}
 
 
 class OConnorWeatherallOp(PolyGraphOp):
     """
     Scientific polarisation (O'Connor & Weatherall, 2018)
     """
+
     def __init__(self, graph, params):
         super().__init__(graph, params)
         # The shape of all node attributes
-        size = (graph.num_nodes(), )
+        size = (graph.num_nodes(),)
         # Multiplier that captures how quickly agents become uncertain about
         # the evidence of their peers as their beliefs diverge.
-        graph.ndata['mistrust'] = init.zeros(size) + params.mistrust
+        graph.ndata["mistrust"] = init.zeros(size) + params.mistrust
         # With anti-updating, agents not only ignore evidence from neighbors
         # they do not trust, they also consider evidence less likely.
-        graph.ndata['anti-updating'] = torch.zeros(size).type(torch.bool) | params.antiupdating
+        graph.ndata["anti-updating"] = (
+            torch.zeros(size).type(torch.bool) | params.antiupdating
+        )
 
     @staticmethod
     def filterfn(edges):
@@ -220,17 +229,14 @@ class OConnorWeatherallOp(PolyGraphOp):
         whether the corresponding edge should be considered or not.
         """
         # Filter out edges whose source has no evidence to report
-        return torch.gt(edges.src['payoff'][:, 1], 0.)
+        return torch.gt(edges.src["payoff"][:, 1], 0.0)
 
     @staticmethod
     def messagefn(edges):
         """
         Message function
         """
-        return {
-            'payoff': edges.src['payoff'],
-            'belief': edges.src['belief']
-        }
+        return {"payoff": edges.src["payoff"], "belief": edges.src["belief"]}
 
     @staticmethod
     def _isantiupdating(tensor):
@@ -246,25 +252,25 @@ class OConnorWeatherallOp(PolyGraphOp):
         # Node attributes of the model
         #
         # Probability that action B is successful
-        probability = nodes.data['probability']
+        probability = nodes.data["probability"]
         # Multiplier that captures how quickly an agent becomes uncertain about evidence
         # received from neighbours whose beliefs are different from its own
-        mistrust = nodes.data['mistrust']
+        mistrust = nodes.data["mistrust"]
         # Prior, P(H) (aka. belief)
-        prior = nodes.data['belief']
+        prior = nodes.data["belief"]
         # Whether to use anti-updating rule or not (see below)
-        antiupdating = OConnorWeatherallOp._isantiupdating(nodes.data['anti-updating'])
+        antiupdating = OConnorWeatherallOp._isantiupdating(nodes.data["anti-updating"])
 
         # Number of nodes and number of neighbours per node (incoming messages)
-        _, neighbours = nodes.mailbox['belief'].shape
+        _, neighbours = nodes.mailbox["belief"].shape
         for i in range(neighbours):
             # A node receives evidence E from its i-th neighbour, say Jill, denoting the
             # number of successful trials and the total number of trials she observed
-            success = nodes.mailbox['payoff'][:, i, 0]
-            failure = nodes.mailbox['payoff'][:, i, 1] - success
+            success = nodes.mailbox["payoff"][:, i, 0]
+            failure = nodes.mailbox["payoff"][:, i, 1] - success
 
             # The difference in belief between an agent and its i-th neighbour
-            delta = torch.abs(prior - nodes.mailbox['belief'][:, i])
+            delta = torch.abs(prior - nodes.mailbox["belief"][:, i])
 
             # Marginal likelyhood, P(E)
             marginal = _marginal(prior, probability, success, failure)
@@ -276,12 +282,14 @@ class OConnorWeatherallOp(PolyGraphOp):
             # Posterior belief if evidence did not occur, P(H|~E)
             # P(~E|H) = 1 - P(E|H)
             # P(~E) = 1 - P(E)
-            misbelief = prior * (1. - likelyhood) / (1. - marginal)
+            misbelief = prior * (1.0 - likelyhood) / (1.0 - marginal)
 
             # Compute belief that the evidence E is real, P(E)(d)
             if antiupdating:
-                certainty = torch.max(1. - delta * mistrust * (1. - marginal),
-                                      torch.zeros((len(nodes),)))
+                certainty = torch.max(
+                    1.0 - delta * mistrust * (1.0 - marginal),
+                    torch.zeros((len(nodes),)),
+                )
             else:
                 # Consider an agent u and one of its neighbours, v. As beliefs between u and v
                 # diverge (delta towards 1), agent u simply ignores the evidence of agent v.
@@ -292,12 +300,13 @@ class OConnorWeatherallOp(PolyGraphOp):
                 # The multiplier simply determines how far apart beliefs have to become before
                 # agent u begins to ignore the evidence of its neighbour, v (since delta never
                 # becomes 1)
-                certainty = 1. - \
-                    torch.min(torch.ones((len(nodes),)), delta * mistrust) * (1. - marginal)
+                certainty = 1.0 - torch.min(
+                    torch.ones((len(nodes),)), delta * mistrust
+                ) * (1.0 - marginal)
             # Update posterior belief, in light of uncertainty
-            posterior = belief * certainty + misbelief * (1. - certainty)
+            posterior = belief * certainty + misbelief * (1.0 - certainty)
             # Consider next neighbour
             prior = posterior
 
         # Return posterior beliefs for each neighbour
-        return {'belief': posterior}
+        return {"belief": posterior}

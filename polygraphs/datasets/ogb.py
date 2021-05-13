@@ -25,20 +25,21 @@ class Collab(PolyGraphDataset):
 
         - The network is undirected.
     """
+
     def __init__(self):
-        origin = 'http://snap.stanford.edu/ogb/data/linkproppred/collab.zip'
+        origin = "http://snap.stanford.edu/ogb/data/linkproppred/collab.zip"
         super().__init__(directed=False, data=origin)
 
     @property
     def collection(self):
-        return 'ogbl'
+        return "ogbl"
 
     @staticmethod
     def numpy(filename):
         """
         Loads a .csv.gz file into a numpy array.
         """
-        return pd.read_csv(filename, compression='gzip', header=None).values
+        return pd.read_csv(filename, compression="gzip", header=None).values
 
     def read(self, **kwargs):
         # pylint: disable=no-member
@@ -51,15 +52,17 @@ class Collab(PolyGraphDataset):
         unzip(self.data.origin)
 
         # Upon extraction, the contents of `collab.zip` are in `collab`
-        collab = os.path.join(self.folder, 'collab')
+        collab = os.path.join(self.folder, "collab")
         assert os.path.isdir(collab)
 
         # Read number of nodes
-        num_nodes = Collab.numpy(os.path.join(collab, 'raw/num-node-list.csv.gz')).item()
+        num_nodes = Collab.numpy(
+            os.path.join(collab, "raw/num-node-list.csv.gz")
+        ).item()
 
         # Read edges. The shape of the array is (m, 2),
         # so we transpose it to get a (2, m) array
-        edges = Collab.numpy(os.path.join(collab, 'raw/edge.csv.gz')).T.astype(np.int64)
+        edges = Collab.numpy(os.path.join(collab, "raw/edge.csv.gz")).T.astype(np.int64)
 
         if not self.directed:
             # Create birectional edges. First, copy each edge:
@@ -81,8 +84,8 @@ class Collab(PolyGraphDataset):
         # the number of co-authored papers in that year.
         #
         # Both features have shape (m, 1) of type np.int64.
-        weight = Collab.numpy(os.path.join(collab, 'raw/edge_weight.csv.gz'))
-        tstamp = Collab.numpy(os.path.join(collab, 'raw/edge_year.csv.gz'))
+        weight = Collab.numpy(os.path.join(collab, "raw/edge_weight.csv.gz"))
+        tstamp = Collab.numpy(os.path.join(collab, "raw/edge_year.csv.gz"))
 
         if not self.directed:
             # Create bidirectional edge features
@@ -92,6 +95,6 @@ class Collab(PolyGraphDataset):
         # Create a DGL graph
         graph = dgl.graph((edges[0], edges[1]), num_nodes=num_nodes)
         # Set edge features
-        graph.edata['w'] = torch.from_numpy(weight)
-        graph.edata['t'] = torch.from_numpy(tstamp)
+        graph.edata["w"] = torch.from_numpy(weight)
+        graph.edata["t"] = torch.from_numpy(tstamp)
         return graph
