@@ -10,6 +10,7 @@ class MonitorHook:
     """
     Periodic monitor
     """
+
     def __init__(self, interval=1, atend=True):
         self._interval = interval
         self._atend = atend
@@ -35,21 +36,23 @@ class MonitorHook:
             # Start the clock
             self._clock.start()
             # Report 0 steps/s
-            throughput = 0.
+            throughput = 0.0
         else:
             # Time elapsed since clock started
             dt = self._clock.lap()  # pylint: disable=invalid-name
-            throughput = (step - 1) / dt / 1000.
+            throughput = (step - 1) / dt / 1000.0
 
         # Number of nodes that believe action A (resp. B) is better
-        beliefs = polygraph.ndata['belief']
-        a, b = torch.sum(torch.le(beliefs, 0.5)), torch.sum(torch.gt(beliefs, 0.5))  # pylint: disable=invalid-name
+        beliefs = polygraph.ndata["belief"]
+        a, b = torch.sum(torch.le(beliefs, 0.5)), torch.sum(
+            torch.gt(beliefs, 0.5)
+        )  # pylint: disable=invalid-name
         # print(beliefs)
         # Log progress
-        msg = '[MON]'
-        msg = f'{msg} step {step:04d}'
-        msg = f'{msg} Ksteps/s {throughput:6.2f}'
-        msg = f'{msg} A/B {a / (a + b):4.2f}/{b / (a + b):4.2f}'
+        msg = "[MON]"
+        msg = f"{msg} step {step:04d}"
+        msg = f"{msg} Ksteps/s {throughput:6.2f}"
+        msg = f"{msg} A/B {a / (a + b):4.2f}/{b / (a + b):4.2f}"
         print(msg)
 
     def mayberun(self, step, beliefs):

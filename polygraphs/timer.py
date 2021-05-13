@@ -11,6 +11,7 @@ class Timer:
     """
     Utility for timing measurements
     """
+
     def __init__(self):
         self._clock = deque()
 

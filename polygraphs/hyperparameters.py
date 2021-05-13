@@ -13,6 +13,7 @@ class HyperParameters:
     """
     Hyper-parameter settings
     """
+
     def __init__(self, **kwargs):
         self.ht = kwargs  # pylint: disable=invalid-name
         self.__dict__.update(self.ht)
@@ -22,7 +23,7 @@ class HyperParameters:
         return "{}({})".format(type(self).__name__, body)
 
     def __setattr__(self, name, value):
-        if name == 'ht':
+        if name == "ht":
             super().__setattr__(name, value)
         else:
             self.update(**{name: value})
@@ -47,12 +48,12 @@ class HyperParameters:
                     HyperParameters._unflatten(value, target[key], separator)
             else:
                 if key in target:
-                    raise ValueError('Duplicate key found: {}'.format(key))
+                    raise ValueError("Duplicate key found: {}".format(key))
                 target[key] = value
         return destination
 
     @staticmethod
-    def unflatten(data, separator='.'):
+    def unflatten(data, separator="."):
         """
         Unflattens a '.'-structured hyper-parameter setting (e.g., `a.b.c`).
         """
@@ -87,10 +88,9 @@ class HyperParameters:
         Updates attribute with given name with the provided value.
         """
         if not hasattr(self, name):
-            raise AttributeError('Attribute not found: {}'.format(name))
+            raise AttributeError("Attribute not found: {}".format(name))
         if not self._isvalid(value):
-            raise TypeError('Invalid value type: {}'
-                            .format(value.__class__.__name__))
+            raise TypeError("Invalid value type: {}".format(value.__class__.__name__))
         self.ht[name] = value
         self.__dict__.update(self.ht)
 
@@ -99,8 +99,7 @@ class HyperParameters:
         Returns destination file name.
         """
         if filename is None:
-            destination = "{}.{}".format(self.__class__.__name__.lower(),
-                                         suffix)
+            destination = "{}.{}".format(self.__class__.__name__.lower(), suffix)
         if directory is not None:
             # If directory does not exist, create it
             if not os.path.isdir(directory):
@@ -118,7 +117,9 @@ class HyperParameters:
                 return dst
             if isinstance(src, dict):
                 for key, value in src.items():
-                    dst._update(key, cls._merge(dst.ht[key], value))  # pylint: disable=protected-access
+                    dst._update(
+                        key, cls._merge(dst.ht[key], value)
+                    )  # pylint: disable=protected-access
                 return dst
             raise ValueError(src)
         if isinstance(dst, dict):
@@ -135,7 +136,7 @@ class HyperParameters:
         """
         Writes hyper-parameters to a .yaml file.
         """
-        filename = self._write_to(directory, filename, 'yaml')
+        filename = self._write_to(directory, filename, "yaml")
         with open(filename, "w") as fstream:
             yaml.dump(self.ht, fstream, Dumper=yaml.CDumper)
         return filename
@@ -144,7 +145,7 @@ class HyperParameters:
         """
         Writes hyper-parameters to a .json file.
         """
-        filename = self._write_to(directory, filename, 'json')
+        filename = self._write_to(directory, filename, "json")
         with open(filename, "w") as fstream:
             json.dump(self.ht, fstream, default=lambda x: x.ht, indent=4)
         return filename
@@ -154,12 +155,12 @@ class HyperParameters:
         """
         Reads hyper-parameters from a .yaml file.
         """
-        with open(filename, 'r') as fstream:
+        with open(filename, "r") as fstream:
             try:
                 data = yaml.load(fstream, Loader=yaml.CLoader)
             finally:
                 data = yaml.load(fstream, Loader=yaml.Loader)
-            data = HyperParameters.unflatten(data, separator='.')
+            data = HyperParameters.unflatten(data, separator=".")
         if not dest:
             dest = cls()
         return cls._merge(dest, data)
@@ -169,7 +170,7 @@ class HyperParameters:
         """
         Reads hyper-parameters from a .json file.
         """
-        with open(filename, 'r') as fstream:
+        with open(filename, "r") as fstream:
             data = json.load(fstream)
         if not dest:
             dest = cls()
@@ -184,11 +185,11 @@ class HyperParameters:
         for filename in filenames:
             # Check file exists
             if not os.path.exists(filename):
-                raise Exception('File not found: {}'.format(filename))
+                raise Exception("File not found: {}".format(filename))
             _, ext = os.path.splitext(filename)
-            if ext in ['yaml', 'yml']:
+            if ext in ["yaml", "yml"]:
                 params = cls.fromYAML(filename, params)
-            elif ext in ['json']:
+            elif ext in ["json"]:
                 params = cls.fromJSON(filename, params)
             else:
                 raise Exception("Invalid file name: {}".format(filename))
@@ -200,11 +201,11 @@ class HyperParameters:
         """
         for name, value in six.iteritems(kwargs):
             if hasattr(self, name):
-                raise AttributeError('Attribute already exists: {}'
-                                     .format(name))
+                raise AttributeError("Attribute already exists: {}".format(name))
             if not self._isvalid(value):
-                raise TypeError('Invalid value type: {}'
-                                .format(value.__class__.__name__))
+                raise TypeError(
+                    "Invalid value type: {}".format(value.__class__.__name__)
+                )
             self.ht[name] = value
             self.__dict__.update(self.ht)
 
@@ -260,7 +261,7 @@ class HyperParameters:
         configurations = []
         for combination in itertools.product(*lst):
             dest = copy.deepcopy(params)
-            data = cls.unflatten(dict(combination), separator='.')
+            data = cls.unflatten(dict(combination), separator=".")
             dest = cls._merge(dest, data)
             configurations.append(dest)
         return configurations
@@ -273,6 +274,7 @@ class LoggingHyperParameters(HyperParameters):
         params.enabled
         params.interval
     """
+
     def __init__(self):
         super().__init__()
         self.add(enabled=True)
@@ -302,6 +304,7 @@ class NetworkHyperParameters(HyperParameters):
         params.snap.name
         params.ogb.name
     """
+
     def __init__(self):
         super().__init__()
         self.add(kind=None)
@@ -311,15 +314,13 @@ class NetworkHyperParameters(HyperParameters):
         self.add(selfloop=True)
         # Network-specific configurations
         self.add(random=HyperParameters(seed=None, probability=1.0))
-        self.add(wattsstrogatz=HyperParameters(knn=2,
-                                               seed=None,
-                                               tries=100,
-                                               probability=1.0))
-        self.add(barabasialbert=HyperParameters(attachments=1,
-                                                seed=None))
+        self.add(
+            wattsstrogatz=HyperParameters(knn=2, seed=None, tries=100, probability=1.0)
+        )
+        self.add(barabasialbert=HyperParameters(attachments=1, seed=None))
         # Adding support for datasets
         self.add(snap=HyperParameters(name=None))
-        self.add(ogb=HyperParameters(name='collab'))
+        self.add(ogb=HyperParameters(name="collab"))
 
 
 class InitHyperParameters(HyperParameters):
@@ -329,13 +330,18 @@ class InitHyperParameters(HyperParameters):
         params.kind
         params.value
     """
+
     def __init__(self):
         super().__init__()
-        self.add(kind='uniform')
+        self.add(kind="uniform")
         # Uniform initializer
         self.add(uniform=HyperParameters(lower=0.0, upper=1.0))
         # Gaussian initializer
-        self.add(gaussian=HyperParameters(mean=0.0, std=1.0, lower=-2.0, upper=2.0, attempts=4))
+        self.add(
+            gaussian=HyperParameters(
+                mean=0.0, std=1.0, lower=-2.0, upper=2.0, attempts=4
+            )
+        )
         # Constant initializer
         self.add(constant=HyperParameters(value=None))
 
@@ -348,9 +354,10 @@ class SimulationHyperParameters(HyperParameters):
         params.repeats
         params.steps
     """
+
     def __init__(self):
         super().__init__()
-        self.add(results='auto')
+        self.add(results="auto")
         self.add(repeats=1)
         self.add(steps=0)
 
@@ -385,6 +392,7 @@ class PolyGraphHyperParameters(HyperParameters):
         params.simulation.repeats
         params.simulation.steps
     """
+
     def __init__(self):
         super().__init__()
 

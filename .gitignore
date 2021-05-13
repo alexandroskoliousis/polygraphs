@@ -4,6 +4,7 @@ results/
 *.csv
 .vscode/
 .DS_Store
+TODO
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

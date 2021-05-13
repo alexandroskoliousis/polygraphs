@@ -8,7 +8,7 @@ import logging.config
 import yaml
 
 
-_LOGGER_NAME = 'polygraphs'
+_LOGGER_NAME = "polygraphs"
 
 
 def _getlogger():
@@ -17,9 +17,9 @@ def _getlogger():
     """
     # Load default logging configuration for polygraphs
     directory, _ = os.path.split(__file__)
-    fname = os.path.join(directory, 'logging.yaml')
+    fname = os.path.join(directory, "logging.yaml")
     assert os.path.isfile(fname)
-    fstream = open(fname, 'r')
+    fstream = open(fname, "r")
     try:
         config = yaml.load(fstream, Loader=yaml.CLoader)
     except ImportError:

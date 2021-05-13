@@ -170,7 +170,9 @@ def random_(size, probability, seed=None, directed=False, selfloop=True):
     if not seed:
         seed = np.random
     # Get graph from networkx
-    graph = dgl.from_networkx(nx.erdos_renyi_graph(size, probability, seed=seed, directed=directed))
+    graph = dgl.from_networkx(
+        nx.erdos_renyi_graph(size, probability, seed=seed, directed=directed)
+    )
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
@@ -181,11 +183,13 @@ def random(params):
     """
     Returns an Erdos-Renyi graph from hyper-parameters
     """
-    return random_(params.size,
-                   params.random.probability,
-                   seed=params.random.seed,
-                   directed=params.directed,
-                   selfloop=params.selfloop)
+    return random_(
+        params.size,
+        params.random.probability,
+        seed=params.random.seed,
+        directed=params.directed,
+        selfloop=params.selfloop,
+    )
 
 
 def complete_(size, selfloop=True):
@@ -228,7 +232,9 @@ def karate(params):
     return karate_(selfloop=params.selfloop)
 
 
-def wattsstrogatz_(size, knn, probability, tries=100, seed=None, selfloop=True):  # pylint: disable=too-many-arguments
+def wattsstrogatz_(
+    size, knn, probability, tries=100, seed=None, selfloop=True
+):  # pylint: disable=too-many-arguments
     """
     Returns a connected Watts–Strogatz small-world graph.
     """
@@ -240,11 +246,11 @@ def wattsstrogatz_(size, knn, probability, tries=100, seed=None, selfloop=True):
     if not seed:
         seed = np.random
     # Get graph from networkx
-    graph = dgl.from_networkx(nx.connected_watts_strogatz_graph(size,
-                                                                knn,
-                                                                probability,
-                                                                tries=tries,
-                                                                seed=seed))
+    graph = dgl.from_networkx(
+        nx.connected_watts_strogatz_graph(
+            size, knn, probability, tries=tries, seed=seed
+        )
+    )
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
@@ -255,12 +261,14 @@ def wattsstrogatz(params):
     """
     Returns a connected Watts–Strogatz small-world graph from hyper-parameters.
     """
-    return wattsstrogatz_(params.size,
-                          params.wattsstrogatz.knn,
-                          params.wattsstrogatz.probability,
-                          tries=params.wattsstrogatz.tries,
-                          seed=params.wattsstrogatz.seed,
-                          selfloop=params.selfloop)
+    return wattsstrogatz_(
+        params.size,
+        params.wattsstrogatz.knn,
+        params.wattsstrogatz.probability,
+        tries=params.wattsstrogatz.tries,
+        seed=params.wattsstrogatz.seed,
+        selfloop=params.selfloop,
+    )
 
 
 def barabasialbert_(size, attachments, seed=None, selfloop=True):
@@ -287,10 +295,12 @@ def barabasialbert(params):
     Returns a random graph according to the Barabasi–Albert
     preferential attachment model from hyper-parameters.
     """
-    return barabasialbert_(params.size,
-                           params.barabasialbert.attachments,
-                           seed=params.barabasialbert.seed,
-                           selfloop=params.selfloop)
+    return barabasialbert_(
+        params.size,
+        params.barabasialbert.attachments,
+        seed=params.barabasialbert.seed,
+        selfloop=params.selfloop,
+    )
 
 
 def snap(params):
@@ -306,7 +316,7 @@ def ogb(params):
     Current only one dataset is supported, ogbl-collab.
     """
     assert params.ogb.name and isinstance(params.ogb.name, str)
-    assert params.ogb.name.lower == 'collab'
+    assert params.ogb.name.lower == "collab"
     dataset = datasets.ogb.Collab()
     graph = dataset.read()
     return graph
@@ -316,11 +326,11 @@ def create(params):
     """
     Returns a GDL graph of given type and size.
     """
-    assert isinstance(params, HyperParameters), 'WTF?!'
+    assert isinstance(params, HyperParameters), "WTF?!"
     # Create friendly dictionary from list of (name, function) tuples
     members = dict(inspect.getmembers(sys.modules[__name__], inspect.isfunction))
     constructor = members.get(params.kind)
     if constructor is None:
-        raise Exception(f'Invalid graph type: {params.kind}')
+        raise Exception(f"Invalid graph type: {params.kind}")
     # Construct DGL graph
     return constructor(params=params)

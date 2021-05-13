@@ -7,7 +7,7 @@ import six
 import pandas as pd
 
 
-_default_columns = ('steps', 'duration', 'action', 'converged', 'polarized')
+_default_columns = ("steps", "duration", "action", "converged", "polarized")
 
 
 def merge(*results, stream=None):
@@ -25,7 +25,7 @@ def merge(*results, stream=None):
         # Concat all frames
         df = pd.concat(frames, ignore_index=True)  # pylint: disable=invalid-name
     else:
-        result, = results
+        (result,) = results
         df = result.frame  # pylint: disable=invalid-name
     if stream:
         df.to_csv(stream, index=False)
@@ -36,6 +36,7 @@ class PolyGraphSimulation:
     """
     A collection of PolyGraph simulation results
     """
+
     def __init__(self, *cols, **meta):
         # Column names
         if not cols:
@@ -49,7 +50,9 @@ class PolyGraphSimulation:
             # Ensure there are no duplicate columns
             assert not any(column in meta for column in cols)
             # Validate metadata values
-            assert all(isinstance(value, (int, float, bool, str)) for value in meta.values())
+            assert all(
+                isinstance(value, (int, float, bool, str)) for value in meta.values()
+            )
         self._meta = meta
         # Data frame of simulation results. Once results are converted
         # to a data frame, the collection becomes read-only.
@@ -94,6 +97,6 @@ class PolyGraphSimulation:
         assert os.path.isdir(directory)
         # Export collection to data frame
         _ = self._export()
-        fname = os.path.join(directory, 'data.csv')
+        fname = os.path.join(directory, "data.csv")
         # Store data frame to a csv file
         self._frame.to_csv(fname, index=False)
