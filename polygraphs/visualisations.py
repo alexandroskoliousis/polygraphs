@@ -31,8 +31,8 @@ def draw(graph, figsize=None, layout=None, **kwargs):
     Draws a PolyGraph.
     """
     # Export beliefs from graph node attributes, if present
-    if "belief" in graph.ndata:
-        beliefs = graph.ndata.get("belief").numpy()
+    if "beliefs" in graph.ndata:
+        beliefs = graph.ndata.get("beliefs").numpy()
     else:
         beliefs = np.zeros(graph.num_nodes())
     # Convert DGL graph to NetworkX graph
@@ -77,7 +77,7 @@ def animate(graph, frames, filename=None, fps=1, figsize=None, layout=None, **kw
     writer = PillowWriter(fps=fps) if ext == "gif" else FFMpegWriter(fps=fps)
 
     # Export beliefs from graph node attributes, otherwise raise an exception
-    beliefs = graph.ndata.get("belief").numpy()
+    beliefs = graph.ndata.get("beliefs").numpy()
     # Add latest beliefs to the right side of the deque
     frames.append(beliefs)
 

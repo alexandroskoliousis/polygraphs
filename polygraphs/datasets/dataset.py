@@ -135,7 +135,7 @@ class PolyGraphDataset(metaclass=abc.ABCMeta):
         return None
 
     @abc.abstractmethod
-    def read(self, **kwargs):
+    def read(self):
         """
         Reads dataset into memory as a DGL graph.
         """

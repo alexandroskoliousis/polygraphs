@@ -31,6 +31,7 @@ class SNAPDataset(PolyGraphDataset):
         return "snap"
 
     def __read_edges(self):
+        # pylint: disable=no-member
         """
         Reads edges (u, v) from dataset file and returns two lists,
         U and V for source and destination nodes, respectively.
@@ -58,7 +59,7 @@ class SNAPDataset(PolyGraphDataset):
 
         return src, dst
 
-    def read(self, **kwargs):
+    def read(self):
         """
         Reads dataset into memory as DGL graph.
         """
@@ -182,10 +183,10 @@ class LiveJournal(SNAPDataset):
             top5K=urljoin(_SNAP, "data/bigdata/communities/com-lj.top5000.cmty.txt.gz"),
         )
 
-    def read(self, **kwargs):
-
+    def read(self):
+        # pylint: disable=no-member
         # Generate graph
-        graph = super().read(**kwargs)
+        graph = super().read()
 
         # A sparse matrix of N rows and 5,000 columns, indicating
         # whether a node (i-th row) belongs to a community or not
@@ -195,7 +196,7 @@ class LiveJournal(SNAPDataset):
         # Read top-5000 communities
         with gzip.open(
             self.top5K.origin, mode="rt"
-        ) as txt:  # pylint: disable=no-member
+        ) as txt:
             for j, line in enumerate(txt):
                 # Ignore comments
                 if line.startswith("#"):

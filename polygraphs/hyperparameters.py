@@ -112,6 +112,7 @@ class HyperParameters:
 
     @classmethod
     def _merge(cls, dst, src):
+        # pylint: disable=protected-access
         if isinstance(dst, HyperParameters):
             if src is None:
                 return dst
@@ -119,7 +120,7 @@ class HyperParameters:
                 for key, value in src.items():
                     dst._update(
                         key, cls._merge(dst.ht[key], value)
-                    )  # pylint: disable=protected-access
+                    )
                 return dst
             raise ValueError(src)
         if isinstance(dst, dict):
@@ -302,7 +303,10 @@ class NetworkHyperParameters(HyperParameters):
         params.barabasialbert.seed
 
         params.snap.name
+        params.snap.extras
+
         params.ogb.name
+        params.ogb.extras
     """
 
     def __init__(self):
@@ -395,6 +399,9 @@ class PolyGraphHyperParameters(HyperParameters):
 
     def __init__(self):
         super().__init__()
+
+        # Operator name
+        self.add(op=None)
 
         # Parameter related to randomness
         self.add(seed=0)

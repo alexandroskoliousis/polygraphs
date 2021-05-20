@@ -41,7 +41,7 @@ class Collab(PolyGraphDataset):
         """
         return pd.read_csv(filename, compression="gzip", header=None).values
 
-    def read(self, **kwargs):
+    def read(self):
         # pylint: disable=no-member
         # self.data
 

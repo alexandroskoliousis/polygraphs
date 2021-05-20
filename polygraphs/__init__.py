@@ -60,7 +60,7 @@ def random(seed=0):
     rnd.seed(seed)
 
 
-def simulate(params, op=ops.NoOp, **meta):  # pylint: disable=invalid-name
+def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
     """
     Runs a PolyGraph simulation multiple times.
 
@@ -69,6 +69,12 @@ def simulate(params, op=ops.NoOp, **meta):  # pylint: disable=invalid-name
         obj:    PolyGraph op
     """
     assert isinstance(params, hparams.PolyGraphHyperParameters)
+    if op is None:
+        # Get operator by name
+        op = ops.getbyname(params.op)
+    else:
+        # Update parameters
+        params.op = op.__class__.name
     # Collection of simulation results
     results = metadata.PolyGraphSimulation(**meta)
     # Run multiple simulations and collect results
@@ -175,7 +181,7 @@ def consensus(graph, lowerupper=0.99):
     Returns action ('A', 'B', or '?') agreed by all agents in the network.
     """
     if converged(graph, lowerupper=lowerupper):
-        belief = graph.ndata["belief"]
+        belief = graph.ndata["beliefs"]
         return "B" if torch.all(torch.gt(belief, lowerupper)) else "A"
     return "?"
 
@@ -184,7 +190,7 @@ def converged(graph, upperlower=0.5, lowerupper=0.99):
     """
     Returns `True` if graph has converged.
     """
-    tensor = graph.ndata["belief"]
+    tensor = graph.ndata["beliefs"]
     result = torch.all(torch.gt(tensor, lowerupper)) or torch.all(
         torch.le(tensor, upperlower)
     )
@@ -195,18 +201,19 @@ def polarized(graph, mistrust=0.0, upperlower=0.5, lowerupper=0.99):
     """
     Returns `True` if graph is polarized.
     """
+    # pylint: disable=invalid-name
     if not mistrust:
         return False
-    tensor = graph.ndata["belief"]
+    tensor = graph.ndata["beliefs"]
     # All nodes have decided which action to take (e.g. A or B)
     c = torch.all(
         torch.gt(tensor, lowerupper) | torch.le(tensor, upperlower)
-    )  # pylint: disable=invalid-name
+    )
     # There is at least one strong believer
     # that action B is better
-    b = torch.any(torch.gt(tensor, lowerupper))  # pylint: disable=invalid-name
+    b = torch.any(torch.gt(tensor, lowerupper))
     # There is at least one disbeliever
-    a = torch.any(torch.le(tensor, upperlower))  # pylint: disable=invalid-name
+    a = torch.any(torch.le(tensor, upperlower))
     if a and b and c:
         delta = torch.min(tensor[torch.gt(tensor, lowerupper)]) - torch.max(
             tensor[torch.le(tensor, upperlower)]

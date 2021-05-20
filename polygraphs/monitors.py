@@ -43,10 +43,10 @@ class MonitorHook:
             throughput = (step - 1) / dt / 1000.0
 
         # Number of nodes that believe action A (resp. B) is better
-        beliefs = polygraph.ndata["belief"]
-        a, b = torch.sum(torch.le(beliefs, 0.5)), torch.sum(
+        beliefs = polygraph.ndata["beliefs"]
+        a, b = torch.sum(torch.le(beliefs, 0.5)), torch.sum(  # pylint: disable=invalid-name
             torch.gt(beliefs, 0.5)
-        )  # pylint: disable=invalid-name
+        )
         # print(beliefs)
         # Log progress
         msg = "[MON]"
