@@ -118,9 +118,7 @@ class HyperParameters:
                 return dst
             if isinstance(src, dict):
                 for key, value in src.items():
-                    dst._update(
-                        key, cls._merge(dst.ht[key], value)
-                    )
+                    dst._update(key, cls._merge(dst.ht[key], value))
                 return dst
             raise ValueError(src)
         if isinstance(dst, dict):

@@ -25,10 +25,7 @@ class Explorer(argparse.Action):  # pylint: disable=too-few-public-methods
                 cfg = json.load(stream)
         else:
             cfg = json.loads(arg)
-        explorables = {
-            key: Explorable(*item.values())
-            for key, item in cfg.items()
-        }
+        explorables = {key: Explorable(*item.values()) for key, item in cfg.items()}
         setattr(namespace, self.dest, explorables)
 
 
@@ -46,7 +43,7 @@ def parse(argv=None):
         default=[],
         metavar="",
         dest="configurations",
-        help="hyper-parameter configuration file(s)"
+        help="hyper-parameter configuration file(s)",
     )
 
     parser.add_argument(
@@ -58,7 +55,7 @@ def parse(argv=None):
         metavar="",
         dest="explorables",
         help="hyper-parameter exploration option(s)",
-        action=Explorer
+        action=Explorer,
     )
 
     return parser.parse_args(argv)

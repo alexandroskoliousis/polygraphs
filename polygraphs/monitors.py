@@ -44,7 +44,9 @@ class MonitorHook:
 
         # Number of nodes that believe action A (resp. B) is better
         beliefs = polygraph.ndata["beliefs"]
-        a, b = torch.sum(torch.le(beliefs, 0.5)), torch.sum(  # pylint: disable=invalid-name
+        a, b = torch.sum(
+            torch.le(beliefs, 0.5)
+        ), torch.sum(  # pylint: disable=invalid-name
             torch.gt(beliefs, 0.5)
         )
         # print(beliefs)

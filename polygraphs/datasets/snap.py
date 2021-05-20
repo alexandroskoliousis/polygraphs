@@ -194,9 +194,7 @@ class LiveJournal(SNAPDataset):
         group = np.zeros((graph.num_nodes(), 5000), dtype=np.ubyte)
 
         # Read top-5000 communities
-        with gzip.open(
-            self.top5K.origin, mode="rt"
-        ) as txt:
+        with gzip.open(self.top5K.origin, mode="rt") as txt:
             for j, line in enumerate(txt):
                 # Ignore comments
                 if line.startswith("#"):

@@ -7,12 +7,7 @@ from .core import PolyGraphOp
 from .common import NoOp, BalaGoyalOp, OConnorWeatherallOp
 
 
-__all__ = [
-    "PolyGraphOp",
-    "BalaGoyalOp",
-    "NoOp",
-    "OConnorWeatherallOp"
-]
+__all__ = ["PolyGraphOp", "BalaGoyalOp", "NoOp", "OConnorWeatherallOp"]
 
 
 def getbyname(name):

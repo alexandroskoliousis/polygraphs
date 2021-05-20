@@ -206,9 +206,7 @@ def polarized(graph, mistrust=0.0, upperlower=0.5, lowerupper=0.99):
         return False
     tensor = graph.ndata["beliefs"]
     # All nodes have decided which action to take (e.g. A or B)
-    c = torch.all(
-        torch.gt(tensor, lowerupper) | torch.le(tensor, upperlower)
-    )
+    c = torch.all(torch.gt(tensor, lowerupper) | torch.le(tensor, upperlower))
     # There is at least one strong believer
     # that action B is better
     b = torch.any(torch.gt(tensor, lowerupper))
