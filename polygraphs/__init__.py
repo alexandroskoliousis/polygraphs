@@ -69,12 +69,20 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
         obj:    PolyGraph op
     """
     assert isinstance(params, hparams.PolyGraphHyperParameters)
+    # Check that either params.op is set, or op is set,
+    # but never both (unless they are the same)
+    if (params.op is None) == (op is None):
+        # Are both None?
+        if (params.op is None) and (op is None):
+            raise ValueError("Operator not set")
+        else:
+            raise ValueError("Either params.op or op must be set, but not both")
     if op is None:
         # Get operator by name
         op = ops.getbyname(params.op)
     else:
-        # Update parameters
-        params.op = op.__class__.name
+        # Set operator name in hyper-parameters for future reference
+        params.op = op.__name__
     # Collection of simulation results
     results = metadata.PolyGraphSimulation(**meta)
     # Run multiple simulations and collect results
@@ -105,6 +113,7 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
             "{:6d} steps "
             "{:7.2f}s; "
             "action: {:1s} "
+            "undefined: {:<1} "
             "converged: {:<1} "
             "polarized: {:<1} ".format(idx + 1, *result)
         )
@@ -149,9 +158,11 @@ def simulate_(
             for hook in hooks:
                 hook.mayberun(step, graph)
         # Check termination conditions:
+        # - Are beliefs undefined (contain nan or inf)?
         # - Has the network converged?
-        # - Is the network polarised?
+        # - Is it polarised?
         terminated = (
+            undefined(graph),
             converged(graph, upperlower=upperlower, lowerupper=lowerupper),
             polarized(
                 graph, upperlower=upperlower, lowerupper=lowerupper, mistrust=mistrust
@@ -160,11 +171,18 @@ def simulate_(
         if any(terminated):
             break
     duration = clock.dt()
-    if hooks:
-        for hook in hooks:
-            hook.conclude(step, graph)
-    # Which action did the network decide to take?
-    act = consensus(graph, lowerupper=lowerupper)
+    if not terminated[0]:
+        # Proper exit
+        if hooks:
+            for hook in hooks:
+                hook.conclude(step, graph)
+        # Which action did the network decide to take?
+        act = consensus(graph, lowerupper=lowerupper)
+    else:
+        # Beliefs are undefined, and so is the action
+        act = "?"
+
+    # Are beliefs undefined (contain nan or inf)?
     # Has the network converged?
     # Is it polarised?
     # How many simulation steps were performed?
@@ -174,6 +192,14 @@ def simulate_(
         duration,
         act,
     ) + terminated
+
+
+def undefined(graph):
+    """
+    Returns `True` is graph beliefs contain undefined values (`nan` or `inf`).
+    """
+    belief = graph.ndata["beliefs"]
+    return torch.any(torch.isnan(belief)) or torch.any(torch.isinf(belief))
 
 
 def consensus(graph, lowerupper=0.99):

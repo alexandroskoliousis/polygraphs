@@ -2,6 +2,8 @@
 PolyGraph models
 """
 
+import sys
+
 from .core import PolyGraphOp
 
 from .common import NoOp, BalaGoyalOp, OConnorWeatherallOp
@@ -19,7 +21,7 @@ def getbyname(name):
     def _find():
         for operator in __all__:
             if name.lower() == operator.lower():
-                return getattr(__file__, operator)
+                return getattr(sys.modules[__name__], operator)
         return None
 
     operator = _find()

@@ -111,3 +111,4 @@ class PolyGraphOp(torch.nn.Module, metaclass=abc.ABCMeta):
         # Send messages along valid edges; and receive them at
         # edge destination nodes
         graph.send_and_recv(edges, self.messagefn(), self.reducefn(), self.applyfn())
+        return graph.ndata["beliefs"]

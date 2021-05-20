@@ -368,6 +368,7 @@ class PolyGraphHyperParameters(HyperParameters):
     """
     Configuration parameters include:
 
+        params.op
         params.seed
         params.epsilon
         params.trials
@@ -386,6 +387,8 @@ class PolyGraphHyperParameters(HyperParameters):
         params.network.selfloop
         params.network.random.*
         params.network.wattsstrogatz.*
+        params.network.snap.*
+        params.network.ogb.*
 
         params.logging.enabled
         params.logging.interval
@@ -409,8 +412,8 @@ class PolyGraphHyperParameters(HyperParameters):
         self.add(trials=10)
 
         # Parameters related to convergence (upper and lower bounds for beliefs)
-        self.add(lowerupper=0.50)
-        self.add(upperlower=0.99)
+        self.add(lowerupper=0.99)
+        self.add(upperlower=0.50)
 
         # Parameters related to polarisation
         self.add(mistrust=0.0)

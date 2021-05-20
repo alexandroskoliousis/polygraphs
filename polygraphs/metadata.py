@@ -7,7 +7,14 @@ import six
 import pandas as pd
 
 
-_default_columns = ("steps", "duration", "action", "converged", "polarized")
+_default_columns = (
+    "steps",
+    "duration",
+    "action",
+    "undefined",
+    "converged",
+    "polarized",
+)
 
 
 def merge(*results, stream=None):
