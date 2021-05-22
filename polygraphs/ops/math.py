@@ -6,14 +6,47 @@ from collections import namedtuple
 import torch
 
 
-Evidence = namedtuple("Evidence", ["p", "k", "n"])
+Evidence = namedtuple("Evidence", ["logits", "values", "trials"])
 
 
-def _logprob(p, k, n):  # pylint: disable=invalid-name
+def _tologits(probabilities):
     """
-    Log unnormalised probability
+    Computes logits from probabilities
     """
-    return k * torch.log(p) + (n - k) * torch.log1p(-p)
+    epsilon = torch.finfo(probabilities.dtype).eps
+    clamped = probabilities.clamp(min=epsilon, max=1 - epsilon)
+    return torch.log(clamped) - torch.log1p(-clamped)
+
+
+def probs(logits, values, trials):
+    """
+    Computes (normalised) probabilities based on torch.distributions.binomial:
+
+        k log(p) + (n - k) log(1 - p) =
+        k (log(p) - log(1 - p)) + n log(1 - p) =
+        k logits - n max(logits, 0) - n log(1 + exp(-|logits|))
+
+    Args:
+        logits: log(p) - log(1 - p)
+        values: Number of positive (or negative) samples observed
+        trials: Total number of trials
+    """
+    norm = trials * logits.clamp(min=0) + trials * torch.log1p(
+        torch.exp(-torch.abs(logits))
+    )
+    logp = values * logits - norm
+    #
+    # Given k successes and n - k failures out of n trials:
+    #
+    #   + log(n! / (k! (n - k)!)) =
+    #   + log(n!) - log(k!) - log((n - k)!)
+    #
+    # lgamma(x + 1) = log x!
+    logp += torch.lgamma(trials + 1)
+    logp -= torch.lgamma(values + 1)
+    logp -= torch.lgamma(trials - values + 1)
+
+    return torch.exp(logp)
 
 
 def likelihood(evidence, hypothesis=True):
@@ -24,8 +57,10 @@ def likelihood(evidence, hypothesis=True):
     Since events are generated independently, we can multiply
     their probabilities.
     """
-    return torch.exp(
-        _logprob(evidence.p if hypothesis else 1 - evidence.p, evidence.k, evidence.n)
+    return probs(
+        evidence.logits,
+        evidence.values if hypothesis else evidence.trials - evidence.values,
+        evidence.trials,
     )
 
 
@@ -47,8 +82,9 @@ def bayes(prior, evidence, occurred=True):
     Updates prior with Bayes' rule.
 
     Args:
-        prior, P(H)
-        event likelihood, P(E|H)
+        prior: P(H)
+        evidence: E
+        occurred: Whether evidence E occured or not
 
     Returns:
         Posterior, P(H|E) = P(H)P(E|H)/P(E)
@@ -67,9 +103,9 @@ def jeffrey(prior, evidence, certainty):
     Updates prior with Jeffrey's rule.
 
     Args:
-        prior, P(H)
-        event likelyhood, P(E|H)
-        certainty
+        prior: P(H)
+        evidence: E
+        certainty: Certainty of observed evidence, E
     """
     # Posterior belief, P(H|E), obtained via strict conditionalization on evidence, E
     belief = bayes(prior, evidence)

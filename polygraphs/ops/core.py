@@ -35,7 +35,7 @@ class PolyGraphOp(torch.nn.Module, metaclass=abc.ABCMeta):
         )
 
         # Store action B's probability of success as a graph node attribute
-        graph.ndata["success"] = probs
+        graph.ndata["logits"] = self._sampler.logits
 
     def sample(self):
         """

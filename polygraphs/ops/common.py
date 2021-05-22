@@ -74,18 +74,18 @@ class BalaGoyalOp(core.PolyGraphOp):
         """
 
         def function(nodes):
-            # A node observes evidence E denoting the number of successful trials (`count`),
-            # and the total number of trials (`total`). The probability of successful trials
-            # is given by `probs`.
-            probs = nodes.data["success"]
-            count = nodes.data["payoffs"][:, 0]
-            total = nodes.data["payoffs"][:, 1]
+            # A node observes evidence E denoting the number of successful trials (`values`),
+            # and the total number of trials (`trials`). The probability of successful trials
+            # is given by `logits`.
+            logits = nodes.data["logits"]
+            values = nodes.data["payoffs"][:, 0]
+            trials = nodes.data["payoffs"][:, 1]
 
             # Prior, P(H) (aka. belief that B is better)
             prior = nodes.data["beliefs"]
 
             # Posterior, P(H|E)
-            posterior = math.bayes(prior, math.Evidence(probs, count, total))
+            posterior = math.bayes(prior, math.Evidence(logits, values, trials))
 
             # Update node attribute
             return {"beliefs": posterior}
@@ -134,8 +134,8 @@ class OConnorWeatherallOp(core.PolyGraphOp):
         """
 
         def function(nodes):
-            # Probability of successful trial
-            probs = nodes.data["success"]
+            # Log probability of successful trials
+            logits = nodes.data["logits"]
             # Prior, P(H) (aka. belief)
             prior = nodes.data["beliefs"]
 
@@ -144,11 +144,11 @@ class OConnorWeatherallOp(core.PolyGraphOp):
             for i in range(neighbours):
                 # A node receives evidence E from its i-th neighbour, say Jill, denoting the
                 # number of successful trials and the total number of trials she observed
-                count = nodes.mailbox["payoffs"][:, i, 0]
-                total = nodes.mailbox["payoffs"][:, i, 1]
+                values = nodes.mailbox["payoffs"][:, i, 0]
+                trials = nodes.mailbox["payoffs"][:, i, 1]
 
                 # Evidence, E
-                evidence = math.Evidence(probs, count, total)
+                evidence = math.Evidence(logits, values, trials)
 
                 # The difference in belief between an agent and its i-th neighbour
                 delta = torch.abs(prior - nodes.mailbox["beliefs"][:, i])

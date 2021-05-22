@@ -6,6 +6,7 @@ import uuid
 import datetime
 import random as rnd
 
+import dgl
 import torch
 import numpy as np
 
@@ -58,6 +59,8 @@ def random(seed=0):
     np.random.seed(seed)
     # Set Python RNG
     rnd.seed(seed)
+    # Set GDL RNG
+    dgl.random.seed(seed)
 
 
 def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
