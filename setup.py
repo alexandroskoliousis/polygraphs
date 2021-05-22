@@ -19,4 +19,5 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=("tests",)),
     install_requires=["torch", "dgl", "notebook", "matplotlib", "PyYaml", "pandas"],
     python_requires=">=3",
+    package_data={'polygraphs': ['logging.yaml']},
 )
