@@ -5,9 +5,16 @@ PolyGraphs command-line interface
 import argparse
 import os
 import json
-from collections import namedtuple
 
-Explorable = namedtuple("Explorable", ["name", "values"])
+
+class Explorable:  # pylint: disable=too-few-public-methods
+    """
+    An explorable hyper-parameter (that is also JSON serializable)
+    """
+
+    def __init__(self, name, values):
+        self.name = name
+        self.values = values
 
 
 class Explorer(argparse.Action):  # pylint: disable=too-few-public-methods

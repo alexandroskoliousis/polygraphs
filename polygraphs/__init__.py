@@ -5,6 +5,8 @@ import os
 import uuid
 import datetime
 import random as rnd
+import collections
+import json
 
 import dgl
 import torch
@@ -25,28 +27,48 @@ log = logger.getlogger()
 _RESULTCACHE = "~/polygraphs-cache/results"
 
 
-def _mkdir(results="auto", attempts=10):
+def _mkdir(directory="auto", attempts=10):
     """
     Creates unique directory to store simulation results.
     """
-    if results == "auto":
+    if directory == "auto":
         head = _RESULTCACHE
         date = datetime.date.today().strftime("%Y-%m-%d")
         for attempt in range(attempts):
             # Generate unique id
-            results = os.path.join(os.path.expanduser(head), date, uuid.uuid4().hex)
+            directory = os.path.join(os.path.expanduser(head), date, uuid.uuid4().hex)
             # Likely
-            if not os.path.isdir(results):
+            if not os.path.isdir(directory):
                 break
         # Unlikely error
         assert (
             attempt + 1 < attempts
         ), f"Failed to generate unique id after {attempts} attempts"
-
+    else:
+        # User-defined directory must not exist
+        assert not os.path.isdir(directory)
     # Create result directory, or raise an exception if it already exists
-    os.makedirs(results)
+    os.makedirs(directory)
+    return directory
 
-    return results
+
+def _trystore(params, result, explorables=None):
+    """
+    Helper function for storing simulation results
+    """
+    if params.simulation.results is None:
+        return
+    # Create destination directory (if not exists)
+    params.simulation.results = _mkdir(params.simulation.results)
+    # Export hyper-parameters
+    params.toJSON(params.simulation.results, filename="configuration.json")
+    # Export explorables
+    if explorables:
+        fname = os.path.join(params.simulation.results, "exploration.json")
+        with open(fname, "w") as fp:
+            json.dump(explorables, fp, default=lambda x: x.__dict__, indent=4)
+    # Export results
+    result.store(params.simulation.results)
 
 
 def random(seed=0):
@@ -63,6 +85,37 @@ def random(seed=0):
     dgl.random.seed(seed)
 
 
+def explore(params, explorables):
+    """
+    Explores multiple PolyGraph configurations.
+    """
+    # Get exploration options
+    options = {var.name: var.values for var in explorables.values()}
+    # Get all possible configurations
+    configurations = hparams.PolyGraphHyperParameters.expand(params, options)
+    # There must be at least two configurations
+    assert len(configurations) > 1
+    # Intermediate result collection
+    collection = collections.deque()
+    # Run all
+    for config in configurations:
+        # Disable storage for now (unless in the future we want to keep intermediate results
+        # to pause/resume experiments)
+        config.simulation.results = None
+        # Set metadata columns
+        meta = {key: getattr(config, var.name) for key, var in explorables.items()}
+        # Run experiment
+        result = simulate(config, **meta)
+        collection.append(result)
+
+    # Merge simulation results
+    results = metadata.merge(*collection)
+    # Store simulation results
+    _trystore(params, results, explorables=explorables)
+    return results
+
+
+@torch.no_grad()
 def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
     """
     Runs a PolyGraph simulation multiple times.
@@ -95,6 +148,8 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
         graph = graphs.create(params.network)
         # Create a model with given configuration
         model = op(graph, params)
+        # Set model in evaluation mode
+        model.eval()
         # Create a logging hook
         if params.logging.enabled:
             hooks = [monitors.MonitorHook(interval=params.logging.interval)]
@@ -122,12 +177,7 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
         )
     # End repeats
     # Store simulation results, configuration and other metadata
-    # Create destination directory (if not exists)
-    params.simulation.results = _mkdir(params.simulation.results)
-    # Export hyper-parameters
-    params.toJSON(params.simulation.results)
-    # Export results
-    results.store(params.simulation.results)
+    _trystore(params, results)
     return results
 
 

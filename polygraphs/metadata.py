@@ -17,7 +17,7 @@ _default_columns = (
 )
 
 
-def merge(*results, stream=None):
+def merge(*results):
     """
     Merge two or more instances of `PolyGraphSimulation` into a single data frame.
     Optionally, write data frame to stream.
@@ -31,18 +31,24 @@ def merge(*results, stream=None):
         assert all(frames[0].columns.equals(frame.columns) for frame in frames[1:])
         # Concat all frames
         df = pd.concat(frames, ignore_index=True)  # pylint: disable=invalid-name
+        result = PolyGraphSimulation.fromframe(df)
     else:
         (result,) = results
-        df = result.frame  # pylint: disable=invalid-name
-    if stream:
-        df.to_csv(stream, index=False)
-    return df
+    return result
 
 
 class PolyGraphSimulation:
     """
     A collection of PolyGraph simulation results
     """
+
+    @classmethod
+    def fromframe(cls, frame):
+        """
+        Returns a `PolyGraphSimulation` container of given data frame.
+        """
+        obj = cls(*frame.columns)
+        obj._frame = frame  # pylint: disable=protected-access
 
     def __init__(self, *cols, **meta):
         # Column names
@@ -96,14 +102,20 @@ class PolyGraphSimulation:
         assert len(self._columns) == len(values)
         self._queue.append(values)
 
-    def store(self, directory):
+    def store(self, directory=None, filename=None, overwrite_ok=True):
         """
         Stores collection to disk.
         """
-        # Ensure that the output directory exists
-        assert os.path.isdir(directory)
+        if filename is None:
+            destination = "data.csv"
+        if directory is not None:
+            # Ensure that the output directory exists
+            assert os.path.isdir(directory)
+            # Set destination path
+            destination = os.path.join(directory, destination)
+        # Check for overwrites
+        assert not (not overwrite_ok and os.path.exists(destination))
         # Export collection to data frame
         _ = self._export()
-        fname = os.path.join(directory, "data.csv")
         # Store data frame to a csv file
-        self._frame.to_csv(fname, index=False)
+        self._frame.to_csv(destination, index=False)
