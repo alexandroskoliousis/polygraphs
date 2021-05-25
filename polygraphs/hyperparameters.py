@@ -28,6 +28,19 @@ class HyperParameters:
         else:
             self.update(**{name: value})
 
+    def getattr(self, name):
+        """
+        Something like __getattr__...
+        """
+        head, *tail = name.split(".", 1)
+        if not hasattr(self, head):
+            raise AttributeError("Attribute not found: {}".format(head))
+        value = self.ht.get(head)
+        if isinstance(value, HyperParameters):
+            # There must be at least another level to explore
+            return value.getattr(*tail)
+        return value
+
     def __contains__(self, key):
         return key in self.ht
 
@@ -100,6 +113,8 @@ class HyperParameters:
         """
         if filename is None:
             destination = "{}.{}".format(self.__class__.__name__.lower(), suffix)
+        else:
+            destination = filename
         if directory is not None:
             # If directory does not exist, create it
             if not os.path.isdir(directory):
@@ -157,7 +172,7 @@ class HyperParameters:
         with open(filename, "r") as fstream:
             try:
                 data = yaml.load(fstream, Loader=yaml.CLoader)
-            finally:
+            except ImportError:
                 data = yaml.load(fstream, Loader=yaml.Loader)
             data = HyperParameters.unflatten(data, separator=".")
         if not dest:
@@ -186,9 +201,9 @@ class HyperParameters:
             if not os.path.exists(filename):
                 raise Exception("File not found: {}".format(filename))
             _, ext = os.path.splitext(filename)
-            if ext in ["yaml", "yml"]:
+            if ext in [".yaml", ".yml"]:
                 params = cls.fromYAML(filename, params)
-            elif ext in ["json"]:
+            elif ext in [".json"]:
                 params = cls.fromJSON(filename, params)
             else:
                 raise Exception("Invalid file name: {}".format(filename))

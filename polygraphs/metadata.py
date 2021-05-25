@@ -49,6 +49,7 @@ class PolyGraphSimulation:
         """
         obj = cls(*frame.columns)
         obj._frame = frame  # pylint: disable=protected-access
+        return obj
 
     def __init__(self, *cols, **meta):
         # Column names

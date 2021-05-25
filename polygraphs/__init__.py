@@ -103,7 +103,7 @@ def explore(params, explorables):
         # to pause/resume experiments)
         config.simulation.results = None
         # Set metadata columns
-        meta = {key: getattr(config, var.name) for key, var in explorables.items()}
+        meta = {key: config.getattr(var.name) for key, var in explorables.items()}
         # Run experiment
         result = simulate(config, **meta)
         collection.append(result)
@@ -252,7 +252,8 @@ def undefined(graph):
     Returns `True` is graph beliefs contain undefined values (`nan` or `inf`).
     """
     belief = graph.ndata["beliefs"]
-    return torch.any(torch.isnan(belief)) or torch.any(torch.isinf(belief))
+    result = torch.any(torch.isnan(belief)) or torch.any(torch.isinf(belief))
+    return result.item()
 
 
 def consensus(graph, lowerupper=0.99):

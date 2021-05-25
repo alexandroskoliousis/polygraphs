@@ -48,6 +48,7 @@ def parse(argv=None):
         type=str,
         required=False,
         default=[],
+        nargs="*",
         metavar="",
         dest="configurations",
         help="hyper-parameter configuration file(s)",
