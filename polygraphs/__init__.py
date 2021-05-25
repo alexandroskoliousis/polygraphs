@@ -65,8 +65,8 @@ def _trystore(params, result, explorables=None):
     # Export explorables
     if explorables:
         fname = os.path.join(params.simulation.results, "exploration.json")
-        with open(fname, "w") as fp:
-            json.dump(explorables, fp, default=lambda x: x.__dict__, indent=4)
+        with open(fname, "w") as fstream:
+            json.dump(explorables, fstream, default=lambda x: x.__dict__, indent=4)
     # Export results
     result.store(params.simulation.results)
 
