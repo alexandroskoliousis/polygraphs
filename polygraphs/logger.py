@@ -21,8 +21,9 @@ def _getlogger():
     assert os.path.isfile(fname)
     fstream = open(fname, "r")
     try:
+        # yaml.CLoader may raise an AttributeError
         config = yaml.load(fstream, Loader=yaml.CLoader)
-    except ImportError:
+    except AttributeError:
         config = yaml.load(fstream, Loader=yaml.Loader)
     logging.config.dictConfig(config)
 

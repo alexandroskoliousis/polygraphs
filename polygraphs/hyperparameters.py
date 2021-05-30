@@ -171,8 +171,9 @@ class HyperParameters:
         """
         with open(filename, "r") as fstream:
             try:
+                # yaml.CLoader may raise an AttributeError
                 data = yaml.load(fstream, Loader=yaml.CLoader)
-            except ImportError:
+            except AttributeError:
                 data = yaml.load(fstream, Loader=yaml.Loader)
             data = HyperParameters.unflatten(data, separator=".")
         if not dest:
