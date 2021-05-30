@@ -16,11 +16,14 @@ class PolyGraphOp(torch.nn.Module, metaclass=abc.ABCMeta):
     def __init__(self, graph, params):
         super().__init__()
 
+        # Set device for experimentation
+        self._device = params.device
+
         # The shape of all node attributes
         size = (graph.num_nodes(),)
 
         # Node beliefs that action B is better
-        graph.ndata["beliefs"] = init.init(size, params.init).double()
+        graph.ndata["beliefs"] = init.init(size, params.init).to(device=self._device)
 
         # Action B yields Bernoulli payoff of 1 (success) with probability p (= 0.5 + e)
         probs = init.halfs(size) + params.epsilon
@@ -35,7 +38,7 @@ class PolyGraphOp(torch.nn.Module, metaclass=abc.ABCMeta):
         )
 
         # Store action B's probability of success as a graph node attribute
-        graph.ndata["logits"] = self._sampler.logits
+        graph.ndata["logits"] = self._sampler.logits.to(device=self._device)
 
     def sample(self):
         """
@@ -59,7 +62,7 @@ class PolyGraphOp(torch.nn.Module, metaclass=abc.ABCMeta):
         # Repeat mask
         mask = mask.tile((2, 1))
         # Sample distribution (a node observes only a few successful trials out of all trials)
-        result = torch.stack((self.sample(), self.trials()))
+        result = torch.stack((self.sample(), self.trials())).to(device=self._device)
         # Apply mask
         result = result * mask
         # Store per-node payoffs as a graph node attribute
@@ -72,7 +75,7 @@ class PolyGraphOp(torch.nn.Module, metaclass=abc.ABCMeta):
         """
 
         def function(edges):
-            return torch.ones((len(edges),)).type(torch.bool)
+            return torch.ones((len(edges),), device=self._device).type(torch.bool)
 
         return function
 

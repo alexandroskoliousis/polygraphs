@@ -383,6 +383,7 @@ class PolyGraphHyperParameters(HyperParameters):
     """
     Configuration parameters include:
 
+        params.device
         params.op
         params.seed
         params.epsilon
@@ -415,6 +416,9 @@ class PolyGraphHyperParameters(HyperParameters):
 
     def __init__(self):
         super().__init__()
+
+        # Target device
+        self.add(device='cpu')
 
         # Operator name
         self.add(op=None)

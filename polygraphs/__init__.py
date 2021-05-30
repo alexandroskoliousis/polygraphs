@@ -146,6 +146,8 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
         log.debug("Simulation #{:04d} starts".format(idx + 1))
         # Create a DGL graph with given configuration
         graph = graphs.create(params.network)
+        # Set device for graph
+        graph = graph.to(device=params.device)
         # Create a model with given configuration
         model = op(graph, params)
         # Set model in evaluation mode

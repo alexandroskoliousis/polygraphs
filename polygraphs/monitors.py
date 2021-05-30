@@ -8,7 +8,7 @@ from . import timer
 
 class MonitorHook:
     """
-    Periodic monitor
+    Periodic monitor for performance measurements
     """
 
     def __init__(self, interval=1, atend=True):
