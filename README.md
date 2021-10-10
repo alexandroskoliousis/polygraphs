@@ -12,7 +12,7 @@ $ python setup.py install
 $ python -m dgl.backend.set_default_backend pytorch
 ```
 
-## Quick Start: Google Colaboratory:
+## Quick Start: Google Colaboratory
 
 ```bash
 !git clone https://[token]@github.com/alexandroskoliousis/polygraphs.git
