@@ -26,7 +26,7 @@ def _get_layout(graph, name, **kwargs):
     return layout(graph, **kwargs)
 
 
-def draw(graph, figsize=None, layout=None, **kwargs):
+def draw(graph, figsize=None, layout=None, fname=None, **kwargs):
     """
     Draws a PolyGraph.
     """
@@ -56,7 +56,13 @@ def draw(graph, figsize=None, layout=None, **kwargs):
     mapper = plt.cm.ScalarMappable(cmap=plt.cm.coolwarm)  # pylint: disable=no-member
     # Show colorbar
     fig.colorbar(mapper)
-    return fig, ax
+    # Save figure to file?
+    if fname:
+        fig.savefig(fname)
+        plt.close(fig)
+        return None, None
+    else:
+        return fig, ax
 
 
 def animate(graph, frames, filename=None, fps=1, figsize=None, layout=None, **kwargs):

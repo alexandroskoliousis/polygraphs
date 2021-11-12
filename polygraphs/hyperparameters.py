@@ -296,6 +296,20 @@ class LoggingHyperParameters(HyperParameters):
         self.add(interval=1)
 
 
+class SnapshotHyperParameters(HyperParameters):
+    """
+    Configuration parameters include:
+
+        params.enabled
+        params.interval
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.add(enabled=False)
+        self.add(interval=1)
+
+
 class NetworkHyperParameters(HyperParameters):
     """
     Configuration parameters include:
@@ -443,6 +457,8 @@ class PolyGraphHyperParameters(HyperParameters):
         self.add(init=InitHyperParameters())
         # Logging configuration
         self.add(logging=LoggingHyperParameters())
+        # Snapshot configuration
+        self.add(snapshots=SnapshotHyperParameters())
         # Network properties (e.g. size, type)
         self.add(network=NetworkHyperParameters())
         # Metadata configuration

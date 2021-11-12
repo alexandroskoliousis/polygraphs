@@ -51,7 +51,7 @@ class PolyGraphSimulation:
         obj._frame = frame  # pylint: disable=protected-access
         return obj
 
-    def __init__(self, *cols, **meta):
+    def __init__(self, *cols, uid=None, **meta):
         # Column names
         if not cols:
             cols = _default_columns
@@ -68,6 +68,8 @@ class PolyGraphSimulation:
                 isinstance(value, (int, float, bool, str)) for value in meta.values()
             )
         self._meta = meta
+        # Experiment unique identifier
+        self._uid = uid
         # Data frame of simulation results. Once results are converted
         # to a data frame, the collection becomes read-only.
         self._frame = None
@@ -90,6 +92,9 @@ class PolyGraphSimulation:
                 # Append metadata as new columns
                 for key, value in six.iteritems(self._meta):
                     self._frame[key] = value
+            if self._uid:
+                # Append uuid as a new column
+                self._frame['uid'] = self._uid
         return self._frame
 
     def add(self, *values):

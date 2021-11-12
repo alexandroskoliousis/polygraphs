@@ -19,24 +19,34 @@ from . import graphs
 from . import ops
 from . import logger
 from . import timer
+from . import visualisations as viz
 
 
 log = logger.getlogger()
 
 # Cache data directory for all results
-_RESULTCACHE = "~/polygraphs-cache/results"
+_RESULTCACHE = os.getenv("POLYGRAPHS_CACHE") or "~/polygraphs-cache/results"
 
 
 def _mkdir(directory="auto", attempts=10):
     """
     Creates unique directory to store simulation results.
     """
-    if directory == "auto":
-        head = _RESULTCACHE
-        date = datetime.date.today().strftime("%Y-%m-%d")
+    # Unique exploration or simulation id
+    uid = None
+    if not directory:
+        # Do nothing
+        return uid, directory
+    head, tail = os.path.split(directory)
+    if tail == "auto":
+        # If the parent is set, do not create subdirectory for today
+        date = datetime.date.today().strftime("%Y-%m-%d") if not head else ""
+        head = head or _RESULTCACHE
         for attempt in range(attempts):
-            # Generate unique id
-            directory = os.path.join(os.path.expanduser(head), date, uuid.uuid4().hex)
+            # Generate unique id string
+            uid = uuid.uuid4().hex
+            # Generate unique directory
+            directory = os.path.join(os.path.expanduser(head), date, uid)
             # Likely
             if not os.path.isdir(directory):
                 break
@@ -49,17 +59,29 @@ def _mkdir(directory="auto", attempts=10):
         assert not os.path.isdir(directory)
     # Create result directory, or raise an exception if it already exists
     os.makedirs(directory)
-    return directory
+    return uid, directory
 
 
-def _trystore(params, result, explorables=None):
+def _storeresult(params, result):
     """
     Helper function for storing simulation results
     """
     if params.simulation.results is None:
         return
-    # Create destination directory (if not exists)
-    params.simulation.results = _mkdir(params.simulation.results)
+    # Ensure destination directory exists
+    assert os.path.isdir(params.simulation.results)
+    # Export results
+    result.store(params.simulation.results)
+
+
+def _storeparams(params, explorables=None):
+    """
+    Helper function for storing configuration parameters
+    """
+    if params.simulation.results is None:
+        return
+    # Ensure destination directory exists
+    assert os.path.isdir(params.simulation.results)
     # Export hyper-parameters
     params.toJSON(params.simulation.results, filename="configuration.json")
     # Export explorables
@@ -67,8 +89,22 @@ def _trystore(params, result, explorables=None):
         fname = os.path.join(params.simulation.results, "exploration.json")
         with open(fname, "w") as fstream:
             json.dump(explorables, fstream, default=lambda x: x.__dict__, indent=4)
-    # Export results
-    result.store(params.simulation.results)
+
+
+def _storegraph(params, graph, prefix):
+    """
+    Helper function for storing simulated graph
+    """
+    if not params.simulation.results:
+        return
+    # Ensure destination directory exists
+    assert os.path.isdir(params.simulation.results)
+    # Export DGL graph in binary format
+    fname = os.path.join(params.simulation.results, f"{prefix}.bin")
+    dgl.save_graphs(fname, [graph])
+    # Export DGL graph as JPEG
+    fname = os.path.join(params.simulation.results, f"{prefix}.jpg")
+    _, _ = viz.draw(graph, layout="circular", fname=fname)
 
 
 def random(seed=0):
@@ -95,15 +131,29 @@ def explore(params, explorables):
     configurations = hparams.PolyGraphHyperParameters.expand(params, options)
     # There must be at least two configurations
     assert len(configurations) > 1
+    # Exploration results ought to be stored
+    assert params.simulation.results
+    # Create parent directory to store results
+    _, params.simulation.results = _mkdir(params.simulation.results)
+    # Store configuration parameters
+    _storeparams(params, explorables=explorables)
     # Intermediate result collection
     collection = collections.deque()
     # Run all
     for config in configurations:
-        # Disable storage for now (unless in the future we want to keep intermediate results
-        # to pause/resume experiments)
-        config.simulation.results = None
+        # Store intermediate results?
+        config.simulation.results = os.path.join(
+            params.simulation.results, "explorations/auto"
+        )
         # Set metadata columns
         meta = {key: config.getattr(var.name) for key, var in explorables.items()}
+        # Metadata columns to string
+        log.info(
+            "Explore {} ({} simulations)".format(
+                ", ".join([f"{k} = {v}" for k, v in meta.items()]),
+                config.simulation.repeats,
+            )
+        )
         # Run experiment
         result = simulate(config, **meta)
         collection.append(result)
@@ -111,7 +161,7 @@ def explore(params, explorables):
     # Merge simulation results
     results = metadata.merge(*collection)
     # Store simulation results
-    _trystore(params, results, explorables=explorables)
+    _storeresult(params, results)
     return results
 
 
@@ -139,8 +189,12 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
     else:
         # Set operator name in hyper-parameters for future reference
         params.op = op.__name__
+    # Create result directory
+    uid, params.simulation.results = _mkdir(params.simulation.results)
+    # Store configuration parameters
+    _storeparams(params)
     # Collection of simulation results
-    results = metadata.PolyGraphSimulation(**meta)
+    results = metadata.PolyGraphSimulation(uid=uid, **meta)
     # Run multiple simulations and collect results
     for idx in range(params.simulation.repeats):
         log.debug("Simulation #{:04d} starts".format(idx + 1))
@@ -150,13 +204,25 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
         graph = graph.to(device=params.device)
         # Create a model with given configuration
         model = op(graph, params)
+        # Export graph (beliefs are initialised)
+        prefix = f"{(idx + 1):0{len(str(params.simulation.repeats))}d}"
+        _storegraph(params, graph, prefix)
         # Set model in evaluation mode
         model.eval()
-        # Create a logging hook
+        # Create hooks
+        hooks = []
         if params.logging.enabled:
-            hooks = [monitors.MonitorHook(interval=params.logging.interval)]
-        else:
-            hooks = None
+            # Create logging hook
+            hooks += [monitors.MonitorHook(interval=params.logging.interval)]
+        if params.snapshots.enabled:
+            # Create snaphot hook
+            hooks += [
+                monitors.SnapshotHook(
+                    interval=params.snapshots.interval,
+                    location=params.simulation.results,
+                    filename=f"{prefix}.hd5"
+                )
+            ]
         # Run simulation
         result = simulate_(
             graph,
@@ -178,8 +244,8 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
             "polarized: {:<1} ".format(idx + 1, *result)
         )
     # End repeats
-    # Store simulation results, configuration and other metadata
-    _trystore(params, results)
+    # Store simulation results
+    _storeresult(params, results)
     return results
 
 

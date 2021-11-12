@@ -1,21 +1,22 @@
 """
 Monitoring infrastructure
 """
+import os
+import abc
 import torch
+import h5py
 
 from . import timer
 
 
-class MonitorHook:
+class BasicHook(metaclass=abc.ABCMeta):
     """
-    Periodic monitor for performance measurements
+    Abstract periodic monitor
     """
-
     def __init__(self, interval=1, atend=True):
+        super().__init__()
         self._interval = interval
         self._atend = atend
-        # Timer that starts after the first step
-        self._clock = timer.Timer()
         # Last processed step (to avoid duplicate runs at end)
         self._last = None
 
@@ -26,9 +27,39 @@ class MonitorHook:
         return self._last and self._last == step
 
     def _run(self, step, polygraph):
+        raise NotImplementedError
+
+    def mayberun(self, step, polygraph):
+        """
+        Monitors progress at given simulation step.
+        """
+        if not self._isvalid(step):
+            return
         # Store last processed step
         self._last = step
+        # User-defined run method
+        self._run(step, polygraph)
 
+    def conclude(self, step, polygraph):
+        """
+        Concludes monitoring.
+        """
+        if not self._atend or self._islast(step):
+            return
+        self._run(step, polygraph)
+
+
+class MonitorHook(BasicHook):
+    """
+    Periodic monitor for performance measurements
+    """
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Timer that starts after the first step
+        # used to measure throughput (steps/s)
+        self._clock = timer.Timer()
+
+    def _run(self, step, polygraph):
         # Compute throughput
         if not self._clock.isrunning():
             # Ensure this is the first step
@@ -44,9 +75,9 @@ class MonitorHook:
 
         # Number of nodes that believe action A (resp. B) is better
         beliefs = polygraph.ndata["beliefs"]
-        a, b = torch.sum(
+        a, b = torch.sum(  # pylint: disable=invalid-name
             torch.le(beliefs, 0.5)
-        ), torch.sum(  # pylint: disable=invalid-name
+        ), torch.sum(
             torch.gt(beliefs, 0.5)
         )
         # print(beliefs)
@@ -57,18 +88,23 @@ class MonitorHook:
         msg = f"{msg} A/B {a / (a + b):4.2f}/{b / (a + b):4.2f}"
         print(msg)
 
-    def mayberun(self, step, beliefs):
-        """
-        Monitors progress at given simulation step.
-        """
-        if not self._isvalid(step):
-            return
-        self._run(step, beliefs)
 
-    def conclude(self, step, polygraph):
-        """
-        Concludes monitoring.
-        """
-        if not self._atend or self._islast(step):
-            return
-        self._run(step, polygraph)
+class SnapshotHook(BasicHook):
+    """
+    Periodic logger for agent beliefs
+    """
+    def __init__(self, location=None, filename="data.hd5", **kwargs):
+        super().__init__(**kwargs)
+        # Store snapshots in user-specified directory
+        assert location and os.path.isdir(location)
+        # Construct HDF5 filename
+        self._filename = os.path.join(location, filename)
+
+    def _run(self, step, polygraph):
+        # Create dataset file, or read/write if exists
+        f = h5py.File(self._filename, 'a')  # pylint: disable=invalid-name
+        # Create new dataset
+        beliefs = polygraph.ndata["beliefs"].numpy()
+        f.create_dataset(str(step), data=beliefs)
+        # Close file
+        f.close()

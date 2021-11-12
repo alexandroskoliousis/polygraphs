@@ -2,5 +2,5 @@
     "network.size": [2, 4, 8, 16, 32, 64, 128],
     "epsilon": [0.001, 0.01, 0.1],
     "trials": [1, 10, 100, 1000],
-    "network.kind": ["complete", "random"]
+    "network.kind": ["complete", "random", "barabasi-albert"]
 }

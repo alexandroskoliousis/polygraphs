@@ -8,10 +8,13 @@ network.size: 16
 # Enable logging; print progress every 100 steps
 logging.enabled: True
 logging.interval: 100
+# Enable snapshots; take one every 100 steps
+snapshots.enabled: True
+snapshots.interval: 100
 # Run 1,000 steps per simulation; repeat simulation 10 times
 simulation.steps: 1000
-simulation.repeats: 10
+simulation.repeats: 5
 # Set seed
 seed: 123456789
-# Set operator
+# Set model
 op: "BalaGoyalOp"

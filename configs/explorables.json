@@ -1,0 +1,10 @@
+{
+    "epsilon": {
+        "name": "epsilon",
+        "values": [0.001, 0.01, 0.1]
+    },
+    "size": {
+        "name": "network.size",
+        "values": [8, 16]
+    }
+}

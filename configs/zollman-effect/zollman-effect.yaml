@@ -14,6 +14,9 @@ network.size: 16
 # Enable logging; print progress every 100 steps
 logging.enabled: True
 logging.interval: 100
+# Enable snapshots; take one every 100 steps
+snapshots.enabled: True
+snapshots.interval: 100
 # Run simulations until convergence; repeat simulation 10 times
 simulation.steps: 0
 simulation.repeats: 10
