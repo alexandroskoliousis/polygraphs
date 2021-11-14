@@ -12,6 +12,10 @@ from .hyperparameters import HyperParameters
 from . import datasets
 
 
+def _isconnected(graph):
+    return nx.is_strongly_connected(dgl.to_networkx(graph))
+
+
 def _buckleup(graph, exist_ok=False):
     """
     Adds self loops to given graph.
@@ -175,6 +179,11 @@ def random_(size, probability, seed=None, directed=False, selfloop=True):
     graph = dgl.from_networkx(
         nx.erdos_renyi_graph(size, probability, seed=seed, directed=directed)
     )
+    if not _isconnected(graph):
+        # Probability p should be greater than ((1 + e)ln(size))/size
+        _p = math.log(size) / size
+        msg = f"Graph G({size, probability}) is disconnected. Try p > {_p}"
+        raise Exception(msg)
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
