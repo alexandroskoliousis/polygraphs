@@ -62,4 +62,7 @@ if __name__ == "__main__":
         config.toJSON(directory, filename=f"{args.array}-{jid}.json")
 
     print(f"{jid} configurations generated")
+
+    # Generate run-array.script
+    # TODO
     print("Bye.")

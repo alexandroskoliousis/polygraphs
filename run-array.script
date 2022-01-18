@@ -6,5 +6,5 @@
 #SBATCH --mem=32GB
 #SBATCH --time=24:00:00
 #SBATCH --export=ALL
-#SBATCH --array=1-192
-python run.py -f configs/arrays/test/test-${SLURM_ARRAY_TASK_ID}.json
+#SBATCH --array=1-6
+python run.py -f mydir/brian/brian-${SLURM_ARRAY_TASK_ID}.json

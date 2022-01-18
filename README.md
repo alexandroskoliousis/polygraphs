@@ -47,3 +47,9 @@ Once on the allocated machine (say `vm`), run:
 ```
 (.venv) [vm] $ python run.py -f configs/test.yaml
 ```
+
+## Generating and running job array configurations
+```bash
+(.venv) $ python scripts/job-array-generator.py -f configs/zollman-effect/zollman-effect.yaml -e configs/explorables.json
+(.venv) $ sbatch run-array.script
+```
