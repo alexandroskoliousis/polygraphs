@@ -36,7 +36,7 @@ class Explorer(argparse.Action):  # pylint: disable=too-few-public-methods
         setattr(namespace, self.dest, explorables)
 
 
-def parse(argv=None):
+def parse(argv=None, required=False, extras=None):
     """
     Parses command-line arguments.
     """
@@ -46,7 +46,7 @@ def parse(argv=None):
         "-f",
         "--configure",
         type=str,
-        required=False,
+        required=required,
         default=[],
         nargs="*",
         metavar="",
@@ -58,12 +58,17 @@ def parse(argv=None):
         "-e",
         "--explore",
         type=str,
-        required=False,
+        required=required,
         default=None,
         metavar="",
         dest="explorables",
         help="hyper-parameter exploration option(s)",
         action=Explorer,
     )
+
+    # Parse user-defined command-line arguments
+    if extras:
+        for arg in extras:
+            parser.add_argument(*arg[0], **arg[1])
 
     return parser.parse_args(argv)

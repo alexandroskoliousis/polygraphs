@@ -7,4 +7,4 @@
 #SBATCH --time=24:00:00
 #SBATCH --export=ALL
 #SBATCH --array=1-192
-python run.py -f configs/zollman-effect/zollman-effect.yaml -e "job-array/explore-random-${SLURM_ARRAY_TASK_ID}.json"
+python run.py -f configs/arrays/test/test-${SLURM_ARRAY_TASK_ID}.json
