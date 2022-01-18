@@ -166,7 +166,7 @@ def grid(params):
     return grid_(params.size, selfloop=params.selfloop)
 
 
-def random_(size, probability, seed=None, directed=False, selfloop=True):
+def random_(size, probability, tries=100, seed=None, directed=False, selfloop=True):
     """
     Returns an Erdos-Renyi graph.
     """
@@ -175,13 +175,28 @@ def random_(size, probability, seed=None, directed=False, selfloop=True):
     # If seed is not set, use NumPy's global RNG
     if not seed:
         seed = np.random
-    # Get graph from networkx
-    graph = dgl.from_networkx(
-        nx.erdos_renyi_graph(size, probability, seed=seed, directed=directed)
-    )
-    if not _isconnected(graph):
-        # Probability p should be greater than ((1 + e)ln(size))/size
-        _p = math.log(size) / size
+    attempt = 0
+    success = False
+    while True:
+        attempt += 1
+        # Get graph from networkx
+        graph = dgl.from_networkx(
+            nx.erdos_renyi_graph(size, probability, seed=seed, directed=directed)
+        )
+        if _isconnected(graph):
+            # Connected graph found; exit loop
+            success = True
+            break
+        else:
+            # Probability p should be greater than ((1 + e)ln(size))/size
+            _p = math.log(size) / size
+            if probability > _p and attempt < tries:
+                # Probability is set correctly; permit failed attempts
+                continue
+            else:
+                # Most likely all attempts will fail; exit loop
+                break
+    if not success:
         msg = f"Graph G({size, probability}) is disconnected. Try p > {_p}"
         raise Exception(msg)
     # Try adding self-loops
@@ -197,6 +212,7 @@ def random(params):
     return random_(
         params.size,
         params.random.probability,
+        tries=params.random.tries,
         seed=params.random.seed,
         directed=params.directed,
         selfloop=params.selfloop,

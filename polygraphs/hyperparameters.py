@@ -345,7 +345,7 @@ class NetworkHyperParameters(HyperParameters):
         # Whether to connect each vertex to itself or not
         self.add(selfloop=True)
         # Network-specific configurations
-        self.add(random=HyperParameters(seed=None, probability=1.0))
+        self.add(random=HyperParameters(seed=None, tries=100, probability=1.0))
         self.add(
             wattsstrogatz=HyperParameters(knn=2, seed=None, tries=100, probability=1.0)
         )
@@ -433,7 +433,7 @@ class PolyGraphHyperParameters(HyperParameters):
         super().__init__()
 
         # Target device
-        self.add(device='cpu')
+        self.add(device="cpu")
 
         # Operator name
         self.add(op=None)
