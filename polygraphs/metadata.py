@@ -94,7 +94,7 @@ class PolyGraphSimulation:
                     self._frame[key] = value
             if self._uid:
                 # Append uuid as a new column
-                self._frame['uid'] = self._uid
+                self._frame["uid"] = self._uid
         return self._frame
 
     def add(self, *values):

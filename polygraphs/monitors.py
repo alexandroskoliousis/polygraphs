@@ -13,6 +13,7 @@ class BasicHook(metaclass=abc.ABCMeta):
     """
     Abstract periodic monitor
     """
+
     def __init__(self, interval=1, atend=True):
         super().__init__()
         self._interval = interval
@@ -53,6 +54,7 @@ class MonitorHook(BasicHook):
     """
     Periodic monitor for performance measurements
     """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Timer that starts after the first step
@@ -77,9 +79,7 @@ class MonitorHook(BasicHook):
         beliefs = polygraph.ndata["beliefs"]
         a, b = torch.sum(  # pylint: disable=invalid-name
             torch.le(beliefs, 0.5)
-        ), torch.sum(
-            torch.gt(beliefs, 0.5)
-        )
+        ), torch.sum(torch.gt(beliefs, 0.5))
         # print(beliefs)
         # Log progress
         msg = "[MON]"
@@ -93,6 +93,7 @@ class SnapshotHook(BasicHook):
     """
     Periodic logger for agent beliefs
     """
+
     def __init__(self, location=None, filename="data.hd5", **kwargs):
         super().__init__(**kwargs)
         # Store snapshots in user-specified directory
@@ -102,7 +103,7 @@ class SnapshotHook(BasicHook):
 
     def _run(self, step, polygraph):
         # Create dataset file, or read/write if exists
-        f = h5py.File(self._filename, 'a')  # pylint: disable=invalid-name
+        f = h5py.File(self._filename, "a")  # pylint: disable=invalid-name
         # Create new dataset
         beliefs = polygraph.ndata["beliefs"].numpy()
         f.create_dataset(str(step), data=beliefs)

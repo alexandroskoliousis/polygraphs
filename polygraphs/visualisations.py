@@ -83,9 +83,9 @@ def animate(graph, frames, filename=None, fps=1, figsize=None, layout=None, **kw
     writer = PillowWriter(fps=fps) if ext == "gif" else FFMpegWriter(fps=fps)
 
     # Export beliefs from graph node attributes, otherwise raise an exception
-    beliefs = graph.ndata.get("beliefs").numpy()
+    # beliefs = graph.ndata.get("beliefs").numpy()
     # Add latest beliefs to the right side of the deque
-    frames.append(beliefs)
+    # frames.append(beliefs)
 
     # Convert DGL graph to NetworkX graph
     G = dgl.to_networkx(graph)  # pylint: disable=invalid-name

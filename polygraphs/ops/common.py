@@ -142,15 +142,17 @@ class OConnorWeatherallOp(core.PolyGraphOp):
             # Number of nodes and number of neighbours per node (incoming messages)
             _, neighbours = nodes.mailbox["beliefs"].shape
             for i in range(neighbours):
-                # A node receives evidence E from its i-th neighbour, say Jill, denoting the
-                # number of successful trials and the total number of trials she observed
+                # A node receives evidence E from its i-th neighbour, say Jill,
+                # denoting the number of successful trials and the total number
+                # of trials she observed
                 values = nodes.mailbox["payoffs"][:, i, 0]
                 trials = nodes.mailbox["payoffs"][:, i, 1]
 
                 # Evidence, E
                 evidence = math.Evidence(logits, values, trials)
 
-                # The difference in belief between an agent and its i-th neighbour
+                # The difference in belief between an agent
+                # and its i-th neighbour
                 delta = torch.abs(prior - nodes.mailbox["beliefs"][:, i])
 
                 # Compute belief that the evidence E is real, P(E)(d)
@@ -163,20 +165,22 @@ class OConnorWeatherallOp(core.PolyGraphOp):
                         torch.zeros((len(nodes),)),
                     )
                 else:
-                    # Consider an agent u and one of its neighbours, v. As beliefs between u and v
-                    # diverge (delta towards 1), agent u simply ignores the evidence of agent v.
+                    # Consider an agent u and one of its neighbours, v. As
+                    # beliefs between u and v diverge (delta towards 1),
+                    # agent u simply ignores the evidence of agent v.
                     #
-                    # If delta becomes 1, uncertainty ~ marginal. In other words, agent u's belief
-                    # remains unchanged in light of agent v's evidence.
+                    # If delta becomes 1, uncertainty ~ marginal. In other
+                    # words, agent u's belief remains unchanged in light of
+                    # agent v's evidence.
                     #
-                    # The multiplier simply determines how far apart beliefs have to become before
-                    # agent u begins to ignore the evidence of its neighbour, v (since delta never
-                    # becomes 1)
+                    # The multiplier simply determines how far apart beliefs
+                    # have to become before agent u begins to ignore the
+                    # evidence of its neighbour, v (since delta never becomes 1)
                     certainty = 1.0 - torch.min(
                         torch.ones((len(nodes),)), delta * self.mistrust
                     ) * (1.0 - math.marginal(prior, evidence))
 
-                # Update posterior belief, in light of soft uncertainty
+                # Compute posterior belief, in light of soft uncertainty
                 posterior = math.jeffrey(prior, evidence, certainty)
 
                 # Consider next neighbour
