@@ -59,7 +59,7 @@ if __name__ == "__main__":
                 jid, ", ".join([f"{k} = {v}" for k, v in meta.items()])
             )
         )
-        config.toJSON(directory, filename=f"{args.array}-{jid}.json")
+        config.toJSON(directory, filename=f"{args.array}-{jid}.json", exists_ok=True)
 
     print(f"{jid} configurations generated")
 

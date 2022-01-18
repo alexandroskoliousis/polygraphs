@@ -107,7 +107,7 @@ class HyperParameters:
         self.ht[name] = value
         self.__dict__.update(self.ht)
 
-    def _write_to(self, directory, filename, suffix):
+    def _write_to(self, directory, filename, suffix, exists_ok=False):
         """
         Returns destination file name.
         """
@@ -121,7 +121,7 @@ class HyperParameters:
                 os.makedirs(directory)
             destination = os.path.join(directory, destination)
         # Check if destination path already exists
-        if os.path.exists(destination):
+        if os.path.exists(destination) and not exists_ok:
             raise Exception("File already exists: {}".format(destination))
         return destination
 
@@ -155,11 +155,13 @@ class HyperParameters:
             yaml.dump(self.ht, fstream, Dumper=yaml.CDumper)
         return filename
 
-    def toJSON(self, directory=None, filename=None):  # pylint: disable=invalid-name
+    def toJSON(
+        self, directory=None, filename=None, exists_ok=False
+    ):  # pylint: disable=invalid-name
         """
         Writes hyper-parameters to a .json file.
         """
-        filename = self._write_to(directory, filename, "json")
+        filename = self._write_to(directory, filename, "json", exists_ok=exists_ok)
         with open(filename, "w") as fstream:
             json.dump(self.ht, fstream, default=lambda x: x.ht, indent=4)
         return filename
