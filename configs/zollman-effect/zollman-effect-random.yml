@@ -5,16 +5,16 @@ op: "BalaGoyalOp"
 # Initial agent beliefs are random uniform between 0 and 1
 init.kind: 'uniform'
 # Chance that action B is better than action A
-epsilon: 0.01
+epsilon: 0.001
 # Per-agent trials
 trials: 10
 # Kind and size of network (a small world network with 16 agents)
 network.kind: 'random'
 network.size: 16
-network.random.probability: 0
+network.random.probability: 0.2
 # Enable logging; print progress every 100 steps
 logging.enabled: True
 logging.interval: 100
-# Run simulations until convergence; repeat simulation 10 times
+# Run simulations until convergence; repeat simulation 100 times
 simulation.steps: 0
-simulation.repeats: 10
+simulation.repeats: 100
