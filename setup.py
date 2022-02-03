@@ -17,7 +17,7 @@ setuptools.setup(
     license="MIT",
     keywords="test test",
     packages=setuptools.find_packages(exclude=("tests",)),
-    install_requires=["torch", "dgl", "notebook", "matplotlib", "PyYaml", "pandas"],
+    install_requires=["torch", "dgl", "notebook", "matplotlib", "pylint", "flake8", "PyYaml", "pandas", "h5py"],
     python_requires=">=3",
     package_data={'polygraphs': ['logging.yaml']},
 )
