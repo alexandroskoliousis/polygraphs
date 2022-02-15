@@ -11,11 +11,11 @@ trials: 10
 # Kind and size of network (a small world network with 16 agents)
 network.kind: 'wattsstrogatz'
 network.size: 16
-network.wattsstrogatz.knn: 2
+network.wattsstrogatz.knn: 8
 network.wattsstrogatz.probability: 0.5
 # Enable logging; print progress every 100 steps
 logging.enabled: True
 logging.interval: 100
-# Run simulations until convergence; repeat simulation 10 times
+# Run simulations until convergence; repeat simulation 100 times
 simulation.steps: 0
-simulation.repeats: 10
+simulation.repeats: 100
