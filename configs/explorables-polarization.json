@@ -1,0 +1,21 @@
+{
+    "size": {
+        "name": "network.size",
+        "values": [4, 16, 64]
+    },
+
+    "trials": {
+        "name": "trials",
+        "values": [4, 16, 64]
+    },
+
+    "epsilon": {
+        "name": "epsilon",
+        "values": [0.001, 0.01, 0.1]
+    },
+
+    "mistrust": {
+        "name": "mistrust",
+        "values": [1, 1.1, 1.5]
+    }
+}
