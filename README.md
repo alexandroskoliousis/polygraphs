@@ -40,7 +40,7 @@ $ source .venv/bin/activate
 (.venv) $ pip install --upgrade pip
 (.venv) $ pip install -r requirements.txt
 (.venv) $ python -m dgl.backend.set_default_backend pytorch
-(.venv) $ python run.sh --help
+(.venv) $ python run.py --help
 (.venv) $ srun --partition=short --nodes=1 --ntasks=1 --cpus-per-task=8 --mem=64GB --export=ALL --pty /bin/bash
 ```
 Once on the allocated machine (say `vm`), run:
