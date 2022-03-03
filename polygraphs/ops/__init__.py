@@ -8,8 +8,16 @@ from .core import PolyGraphOp
 
 from .common import NoOp, BalaGoyalOp, OConnorWeatherallOp
 
+from .confessionals import BeliefConfessionalOp
 
-__all__ = ["PolyGraphOp", "BalaGoyalOp", "NoOp", "OConnorWeatherallOp"]
+
+__all__ = [
+    "PolyGraphOp",
+    "BalaGoyalOp",
+    "NoOp",
+    "OConnorWeatherallOp",
+    "BeliefConfessionalOp",
+]
 
 
 def getbyname(name):

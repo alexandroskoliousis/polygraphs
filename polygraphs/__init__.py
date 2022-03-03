@@ -19,7 +19,9 @@ from . import graphs
 from . import ops
 from . import logger
 from . import timer
-from . import visualisations as viz
+
+# Removed (exporting PolyGraph to JPEG is deprecated for now)
+# from . import visualisations as viz
 
 
 log = logger.getlogger()
@@ -103,8 +105,14 @@ def _storegraph(params, graph, prefix):
     fname = os.path.join(params.simulation.results, f"{prefix}.bin")
     dgl.save_graphs(fname, [graph])
     # Export DGL graph as JPEG
-    fname = os.path.join(params.simulation.results, f"{prefix}.jpg")
-    _, _ = viz.draw(graph, layout="circular", fname=fname)
+    #
+    # Important note:
+    #
+    #    viz.draw is not well suited for drawing a graph.
+    #    Remove for now.
+    #
+    # fname = os.path.join(params.simulation.results, f"{prefix}.jpg")
+    # _, _ = viz.draw(graph, layout="circular", fname=fname)
 
 
 def random(seed=0):

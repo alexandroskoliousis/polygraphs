@@ -28,7 +28,8 @@ def _get_layout(graph, name, **kwargs):
 
 def draw(graph, figsize=None, layout=None, fname=None, **kwargs):
     """
-    Draws a PolyGraph.
+    Draws a PolyGraph. Note that this function appears to be
+    not well-suited for more than a handful of nodes.
     """
     # Export beliefs from graph node attributes, if present
     if "beliefs" in graph.ndata:
