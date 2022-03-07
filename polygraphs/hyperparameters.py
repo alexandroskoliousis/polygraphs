@@ -192,6 +192,13 @@ class HyperParameters:
         if not dest:
             dest = cls()
         return cls._merge(dest, data)
+    
+    @classmethod
+    def fromJSON_(cls, fstream):
+        data = json.load(fstream)
+        dest = cls()
+        return cls._merge(dest, data)
+
 
     @classmethod
     def load(cls, filenames):
