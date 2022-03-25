@@ -16,6 +16,6 @@ network.barabasialbert.seed: 0
 # Enable logging; print progress every 100 steps
 logging.enabled: True
 logging.interval: 100
-# Run simulations until convergence; repeat simulation 100 times
+# Run simulations until convergence; repeat simulation 50 times
 simulation.steps: 0
-simulation.repeats: 100
+simulation.repeats: 50
