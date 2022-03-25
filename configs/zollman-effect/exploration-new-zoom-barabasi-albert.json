@@ -1,0 +1,22 @@
+{
+    "size": {
+        "name": "network.size",
+        "values": [4, 8, 16, 32]
+    },
+
+    "trials": {
+        "name": "trials",
+        "values": [4, 16]
+    },
+
+    "epsilon": {
+        "name": "epsilon",
+        "values": [0.001, 0.002, 0.004, 0.008]
+    },
+
+        "attachments": {
+            "name": "network.barabasialbert.attachments",
+            "values": [1, 2, 4, 8, 16]
+        }
+
+}
