@@ -2,6 +2,7 @@ import argparse
 import os
 import pandas as pd
 import six
+import zipfile
 
 from polygraphs import hyperparameters as hp
 from polygraphs import metadata
@@ -14,21 +15,23 @@ def cli(argv=None):
     parser = argparse.ArgumentParser(description="Infer PolyGraph exploration")
 
     parser.add_argument(
-        "-f",
-        "--folder",
+        "-l",
+        "--location",
         type=str,
         required=True,
         default=None,
         metavar="",
-        dest="folder",
-        help="folder containing simulation results",
+        dest="location",
+        help="location containing simulation results",
     )
 
     args = parser.parse_args(argv)
 
-    if not os.path.isdir(args.folder):
+    # Location is either a folder or a zip file
+    if not os.path.exists(args.location):
         raise Exception(f"Invalid folder: {args.folder}")
-    return args.folder
+
+    return args.location
 
 
 def _isfolder(folder, file):
@@ -170,10 +173,7 @@ def _postprocess(folder, subfolders, extractor):
     return metadata.merge(*results)
 
 
-if __name__ == "__main__":
-    # Parse command-line arguments
-    folder = cli()
-    print(f"Find exploration in {folder}")
+def findinfolder(folder):
     # List all sub-folders and check their correctness
     subfolders = os.listdir(folder)
     print(f"{len(subfolders)} files found")
@@ -195,5 +195,84 @@ if __name__ == "__main__":
         "random": _random,
     }[kind]
     result = _postprocess(folder, subfolders, extractorfn)
-    result.store(folder)
+    result.store()
+
+
+def findinzip(filename):
+    networks = []
+    with zipfile.ZipFile(filename) as zip:
+        for f in zip.namelist():
+            zinfo = zip.getinfo(f)
+            if not zinfo.is_dir():
+                # print(f"warning: ignore {f}")
+                continue
+            # Assume directory contains simulation results
+            print(f"Look into {f}")
+            with zip.open(os.path.join(f, "configuration.json")) as file:
+                params = hp.PolyGraphHyperParameters.fromJSON_(file)
+                networks.append(params.network.kind)
+    # At this point we assume that all simulation results in the folder
+    # are for the same network kind.
+    assert len(set(networks)) == 1, f"Multiple networks found: {set(networks)}"
+    kind = networks[0]
+    print(kind)
+
+    extractorfn = {
+        "complete": _complete,
+        "wattsstrogatz": _wattsstrogatz,
+        "barabasialbert": _barabasialbert,
+        "random": _random,
+    }[kind]
+
+    explorables = set()
+    results = []
+
+    zip = zipfile.ZipFile(filename)
+    for f in zip.namelist():
+        zinfo = zip.getinfo(f)
+        if not zinfo.is_dir():
+            # print(f"warning: ignore {f}")
+            continue
+        # Assume directory contains simulation results
+        print(f"Look into {f}")
+        params = hp.PolyGraphHyperParameters.fromJSON_(
+            zip.open(os.path.join(f, "configuration.json"))
+        )
+        # Load results
+        try:
+            data = pd.read_csv(zip.open(os.path.join(f, "data.csv")))
+        except:
+            print(f'error: {os.path.join(f, "data.csv")}')
+            continue
+        # Extract metadata
+        meta = extractorfn(params)
+
+        # Ensure uniqueness of simulation results
+        t = tuple(meta.values())
+        if t in explorables:
+            print(f"warning: duplicate exploration found: {meta} in {f}")
+        else:
+            print(f, t)
+            explorables.add(t)
+
+        # Append metadata as new columns
+        for key, value in six.iteritems(meta):
+            data[key] = value
+
+        # Keep results
+        results.append(metadata.PolyGraphSimulation.fromframe(data))
+
+    # Merge all results
+    theResult = metadata.merge(*results)
+    theResult.store()
+
+
+if __name__ == "__main__":
+    # Parse command-line arguments
+    loc = cli()
+    print(f"Find exploration in {loc}")
+    if os.path.isdir(loc):
+        findinfolder(loc)
+    else:
+        findinzip(loc)
     print("Bye.")
