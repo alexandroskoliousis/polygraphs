@@ -336,7 +336,8 @@ def snap(params):
     """
     Returns a SNAP dataset, identified by `params.snap.name`.
     """
-    graph = datasets.snap.getbyname(params.snap.name).read()
+    from .datasets import snap as snp
+    graph = snp.getbyname(params.snap.name).read()
     # Update network size
     params.size = graph.num_nodes()
     return graph
