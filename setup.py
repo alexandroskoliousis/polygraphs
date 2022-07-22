@@ -20,4 +20,5 @@ setuptools.setup(
     install_requires=["torch", "dgl", "notebook", "matplotlib", "pylint", "flake8", "PyYaml", "pandas", "h5py"],
     python_requires=">=3",
     package_data={'polygraphs': ['logging.yaml']},
+    include_package_data=True,
 )

@@ -57,11 +57,15 @@ def likelihood(evidence, hypothesis=True):
     Since events are generated independently, we can multiply
     their probabilities.
     """
-    return probs(
+    result = probs(
         evidence.logits,
         evidence.values if hypothesis else evidence.trials - evidence.values,
         evidence.trials,
     )
+    assert torch.all(torch.ge(result, 0.)) and torch.all(torch.le(result, 1.))
+    epsilon = torch.finfo(result.dtype).eps
+    clamped = result.clamp(min=epsilon, max=1 - epsilon)
+    return clamped
 
 
 def marginal(prior, evidence):
@@ -72,9 +76,13 @@ def marginal(prior, evidence):
         prior, P(H)
         event likelihood, P(E|H)
     """
-    return prior * likelihood(evidence) + (1.0 - prior) * likelihood(
+    result = prior * likelihood(evidence) + (1.0 - prior) * likelihood(
         evidence, hypothesis=False
     )
+    assert torch.all(torch.ge(result, 0.)) and torch.all(torch.le(result, 1.))
+    epsilon = torch.finfo(result.dtype).eps
+    clamped = result.clamp(min=epsilon, max=1 - epsilon)
+    return clamped
 
 
 def bayes(prior, evidence, occurred=True):
@@ -87,7 +95,7 @@ def bayes(prior, evidence, occurred=True):
         occurred: Whether evidence E occured or not
 
     Returns:
-        Posterior, P(H|E) = P(H)P(E|H)/P(E)
+        Posterior, P(H|E) ~ P(H)P(E|H) / P(E)
     """
     if occurred:
         result = prior * likelihood(evidence) / marginal(prior, evidence)

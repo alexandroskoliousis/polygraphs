@@ -73,8 +73,8 @@ class MonitorHook(BasicHook):
         else:
             # Time elapsed since clock started
             dt = self._clock.lap()  # pylint: disable=invalid-name
-            throughput = (step - 1) / dt / 1000.0
-
+            throughput = ((step - 1) / dt) / 1000.0
+            
         # Number of nodes that believe action A (resp. B) is better
         beliefs = polygraph.ndata["beliefs"]
         a, b = torch.sum(  # pylint: disable=invalid-name

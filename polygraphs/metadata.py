@@ -114,6 +114,8 @@ class PolyGraphSimulation:
         """
         if filename is None:
             destination = "data.csv"
+        else:
+            destination = filename
         if directory is not None:
             # Ensure that the output directory exists
             assert os.path.isdir(directory)

@@ -18,14 +18,14 @@ def _getlogger():
     # Load default logging configuration for polygraphs
     directory, _ = os.path.split(__file__)
     fname = os.path.join(directory, "logging.yaml")
-    assert os.path.isfile(fname)
-    fstream = open(fname, "r")
-    try:
-        # yaml.CLoader may raise an AttributeError
-        config = yaml.load(fstream, Loader=yaml.CLoader)
-    except AttributeError:
-        config = yaml.load(fstream, Loader=yaml.Loader)
-    logging.config.dictConfig(config)
+    if os.path.isfile(fname):
+        fstream = open(fname, "r")
+        try:
+            # yaml.CLoader may raise an AttributeError
+            config = yaml.load(fstream, Loader=yaml.CLoader)
+        except AttributeError:
+            config = yaml.load(fstream, Loader=yaml.Loader)
+        logging.config.dictConfig(config)
 
     # Reduced warning level name
     logging.addLevelName(logging.WARNING, "WARN")
