@@ -62,7 +62,7 @@ def likelihood(evidence, hypothesis=True):
         evidence.values if hypothesis else evidence.trials - evidence.values,
         evidence.trials,
     )
-    assert torch.all(torch.ge(result, 0.)) and torch.all(torch.le(result, 1.))
+    # assert torch.all(torch.ge(result, 0.)) and torch.all(torch.le(result, 1.))
     epsilon = torch.finfo(result.dtype).eps
     clamped = result.clamp(min=epsilon, max=1 - epsilon)
     return clamped
@@ -79,7 +79,7 @@ def marginal(prior, evidence):
     result = prior * likelihood(evidence) + (1.0 - prior) * likelihood(
         evidence, hypothesis=False
     )
-    assert torch.all(torch.ge(result, 0.)) and torch.all(torch.le(result, 1.))
+    # assert torch.all(torch.ge(result, 0.)) and torch.all(torch.le(result, 1.))
     epsilon = torch.finfo(result.dtype).eps
     clamped = result.clamp(min=epsilon, max=1 - epsilon)
     return clamped
