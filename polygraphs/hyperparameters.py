@@ -311,12 +311,14 @@ class SnapshotHyperParameters(HyperParameters):
 
         params.enabled
         params.interval
+        params.messages
     """
 
     def __init__(self):
         super().__init__()
         self.add(enabled=False)
         self.add(interval=1)
+        self.add(messages=False)
 
 
 class NetworkHyperParameters(HyperParameters):

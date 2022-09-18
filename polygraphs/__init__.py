@@ -227,6 +227,7 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
             hooks += [
                 monitors.SnapshotHook(
                     interval=params.snapshots.interval,
+                    messages=params.snapshots.messages,
                     location=params.simulation.results,
                     filename=f"{prefix}.hd5",
                 )

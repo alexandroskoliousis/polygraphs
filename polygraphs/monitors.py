@@ -94,18 +94,33 @@ class SnapshotHook(BasicHook):
     Periodic logger for agent beliefs
     """
 
-    def __init__(self, location=None, filename="data.hd5", **kwargs):
+    def __init__(self, messages=False, location=None, filename="data.hd5", **kwargs):
         super().__init__(**kwargs)
         # Store snapshots in user-specified directory
         assert location and os.path.isdir(location)
         # Construct HDF5 filename
         self._filename = os.path.join(location, filename)
+        # Whether to snapshot messages or not
+        self._messages = messages
 
     def _run(self, step, polygraph):
         # Create dataset file, or read/write if exists
         f = h5py.File(self._filename, "a")  # pylint: disable=invalid-name
-        # Create new dataset
+
+        # Store beliefs
         beliefs = polygraph.ndata["beliefs"].numpy()
-        f.create_dataset(str(step), data=beliefs)
+        # Create or modify group
+        grp = f.require_group("beliefs")
+        # Create new dataset
+        grp.create_dataset(str(step), data=beliefs)
+        
+        # Store messages
+        if self._messages:
+            payoffs = polygraph.ndata["payoffs"].numpy()
+            # Create or modify group
+            grp = f.require_group("payoffs")
+            # Create new dataset
+            grp.create_dataset(str(step), data=payoffs)
+
         # Close file
         f.close()
