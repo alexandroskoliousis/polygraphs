@@ -6,9 +6,7 @@ import sys
 
 from .core import PolyGraphOp
 
-from .common import NoOp, BalaGoyalOp, OConnorWeatherallOp
-
-from .confessionals import BeliefConfessionalOp
+from .common import NoOp, BalaGoyalOp, OConnorWeatherallOp, OConnorWeatherallSquareRootDistanceOp
 
 
 __all__ = [
@@ -16,7 +14,7 @@ __all__ = [
     "BalaGoyalOp",
     "NoOp",
     "OConnorWeatherallOp",
-    "BeliefConfessionalOp",
+    "OConnorWeatherallSquareRootDistanceOp"
 ]
 
 

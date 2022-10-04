@@ -1,7 +1,7 @@
 # Set seed
 seed: 123456789
 # Set model
-op: "OConnorWeatherallOp"
+op: "OConnorWeatherallSquareRootDistanceOp"
 mistrust: 1.5
 # Initial agent beliefs are random uniform between 0 and 1
 init.kind: 'uniform'
@@ -11,7 +11,7 @@ epsilon: 0.01
 trials: 10
 # Kind and size of network (a complete network with 16 agents)
 network.kind: 'complete'
-network.size: 16
+network.size: 8
 # Enable logging; print progress every 100 steps
 logging.enabled: True
 logging.interval: 100
@@ -20,4 +20,4 @@ snapshots.enabled: True
 snapshots.interval: 100
 # Run simulations until convergence; repeat simulation 50 times
 simulation.steps: 0
-simulation.repeats: 50
+simulation.repeats: 10

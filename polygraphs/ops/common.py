@@ -182,7 +182,7 @@ class OConnorWeatherallOp(core.PolyGraphOp):
                     # have to become before agent u begins to ignore the
                     # evidence of its neighbour, v (since delta never becomes 1)
                     certainty = 1.0 - torch.min(
-                        torch.ones((len(nodes),)), self.distancefn(delta)
+                        torch.ones((len(nodes),)), self._distancefn(delta)
                     ) * (1.0 - math.marginal(prior, evidence))
 
                 # Compute posterior belief, in light of soft uncertainty
@@ -197,22 +197,10 @@ class OConnorWeatherallOp(core.PolyGraphOp):
         return function
 
 
-class OConnorWeatherallTwistedOp(OConnorWeatherallOp):
+class OConnorWeatherallSquareRootDistanceOp(OConnorWeatherallOp):
     """
     Scientific polarisation (O'Connor & Weatherall, 2018), but with a twist.
     """
 
     def _distancefn(self, delta):
         return torch.sqrt(delta)
-
-
-class SimpleEpistemicInjusticeOp(core.PolyGraphOp):
-    """
-    Epistemic Injustice: There are two groups, A and B. One group does not trust the other.
-    """
-
-
-class UnreliableNetworkOp(core.PolyGraphOp):
-    """
-    Unreliable networks: There are two types of nodes, reliable (R) and unreliable (U).
-    """
