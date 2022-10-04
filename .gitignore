@@ -2,6 +2,7 @@
 polygraphs-cache/
 scratchpad.ipynb
 results/
+examples/data/
 *.csv
 .vscode/
 .DS_Store
