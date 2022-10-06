@@ -204,3 +204,12 @@ class OConnorWeatherallSquareRootDistanceOp(OConnorWeatherallOp):
 
     def _distancefn(self, delta):
         return torch.sqrt(delta)
+
+
+class OConnorWeatherallSquareDistanceOp(OConnorWeatherallOp):
+    """
+    Scientific polarisation (O'Connor & Weatherall, 2018), but with a twist.
+    """
+
+    def _distancefn(self, delta):
+        return torch.pow(delta, 2)
