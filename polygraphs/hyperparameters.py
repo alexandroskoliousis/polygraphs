@@ -199,7 +199,6 @@ class HyperParameters:
         dest = cls()
         return cls._merge(dest, data)
 
-
     @classmethod
     def load(cls, filenames):
         """
@@ -463,6 +462,9 @@ class PolyGraphHyperParameters(HyperParameters):
         # Parameters related to polarisation
         self.add(mistrust=0.0)
         self.add(antiupdating=False)
+
+        # Parameters related to testimonials and epistemic injustice
+        self.add(reliability=1.0)
 
         # Parameters related to belief initilisation
         self.add(init=InitHyperParameters())
