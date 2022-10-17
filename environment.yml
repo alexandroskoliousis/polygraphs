@@ -6,4 +6,5 @@ dependencies:
   - jupyterlab
   - tqdm
   - fsspec
+  - ipywidgets
 prefix: /opt/homebrew/anaconda3/envs/polygraphs
