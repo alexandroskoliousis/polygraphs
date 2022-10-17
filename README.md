@@ -11,6 +11,13 @@ $ pip install --upgrade pip
 $ python setup.py install
 $ python -m dgl.backend.set_default_backend pytorch
 ```
+For Conda environments:
+```bash
+$ conda env create -n polygraphs --file environment.yml
+$ source activate polygraphs
+$ python setup.py install
+$ python -m dgl.backend.set_default_backend pytorch
+```
 
 ## Quick Start: Google Colaboratory
 
