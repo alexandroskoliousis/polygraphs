@@ -7,4 +7,3 @@ dependencies:
   - tqdm
   - fsspec
   - ipywidgets
-prefix: /opt/homebrew/anaconda3/envs/polygraphs
