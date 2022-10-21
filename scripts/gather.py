@@ -13,6 +13,7 @@ from collections import deque
 import pandas as pd
 import dgl
 import networkx as nx
+import sys
 from pathlib import Path
 import argparse
 
@@ -22,6 +23,8 @@ from tqdm.autonotebook import tqdm
 # For access to cached results
 from fsspec.implementations.local import LocalFileSystem
 
+# Import polygraphs
+sys.path.append("../")
 from polygraphs import hyperparameters as hp
 from polygraphs import metadata
 
@@ -305,9 +308,10 @@ parser.add_argument(
     type=str,
     required=False,
     default="~/polygraphs-cache/",
+    nargs=1,
     metavar="",
     dest="results",
-    help="location of results folder(s)",
+    help="location of results folder",
 )
 
 parser.add_argument(
