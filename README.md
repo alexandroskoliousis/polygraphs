@@ -42,6 +42,7 @@ $ python -V
 Python 3.8.1
 $ git clone git@github.com:<account name>/polygraphs.git
 $ cd polygraphs
+$ echo "export PYTHONPATH=$PWD:$PYTHONPATH" >> ~/.bashrc
 $ python3 -m venv .venv
 $ source .venv/bin/activate
 (.venv) $ pip install --upgrade pip
@@ -53,6 +54,10 @@ $ source .venv/bin/activate
 Once on the allocated machine (say `vm`), run:
 ```
 (.venv) [vm] $ python run.py -f configs/test.yaml
+```
+To gather the results from the simulation into a CSV file run
+```
+(.venv) [vm] $ python scripts/gather.py
 ```
 
 ## Generating and running job array configurations
