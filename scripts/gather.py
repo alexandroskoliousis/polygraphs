@@ -305,7 +305,7 @@ parser.add_argument(
     "-f",
     type=str,
     required=False,
-    default="~/polygraphs-cache/",
+    default=["~/polygraphs-cache/"],
     nargs=1,
     metavar="",
     dest="results",
@@ -339,8 +339,9 @@ args = parser.parse_args()
 # Create local filesystem interface
 filesystem = LocalFileSystem()
 
+
 # List all simulation results in result directory
-results = ls(filesystem, args.results, ext="csv")
+results = ls(filesystem, args.results[0], ext="csv")
 results = list(filter(isunique, results))
 print(f"{len(results):5d} results in total")
 
@@ -464,7 +465,7 @@ for net, lst in networks.items():
             k.append(1.0)
 
             # Collect paths to graphs
-            f.append(os.path.relpath(filepath, start=args.results))
+            f.append(os.path.relpath(filepath, start=args.results[0]))
 
             # subbar.update()
 
@@ -480,4 +481,4 @@ for net, lst in networks.items():
 
     # Merge all results
     merged = metadata.merge(*collection)
-    merged.store(filename=f"{args.results}/{Path(result).parent.parent.name}-{net}.csv")
+    merged.store(filename=f"{args.results[0]}/{Path(result).parent.parent.name}-{net}.csv")
