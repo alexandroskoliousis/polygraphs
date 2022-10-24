@@ -8,9 +8,11 @@
 $ python3 -m venv .venv
 $ source .venv/bin/activate
 $ pip install --upgrade pip
-$ python setup.py install
-$ python -m dgl.backend.set_default_backend pytorch
+$ pip install -e .
+$ python -m dgl.backend.set_default_backend . pytorch
 ```
+On macos, you may need to install some packages via homebrew, such as `hd5`, `cython` and `yaml`. 
+
 For Conda environments:
 ```bash
 $ conda env create -n polygraphs --file environment.yml
