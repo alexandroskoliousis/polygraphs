@@ -159,6 +159,24 @@ class LiveJournal1(SNAPDataset):
         )
 
 
+class EmailEUCore(SNAPDataset):
+
+    def __init__(self):
+        super().__init__(
+            folder="email-eu-core",
+            edges=urljoin(_SNAP, "data/email-Eu-core.txt.gz"),
+        )
+
+
+class EmailEUAll(SNAPDataset):
+
+    def __init__(self):
+        super().__init__(
+            folder="email-eu-all",
+            edges=urljoin(_SNAP, "data/email-EuAll.txt.gz"),
+        )
+
+
 class LiveJournal(SNAPDataset):
     """
     LiveJournal social network and ground-truth communities from
