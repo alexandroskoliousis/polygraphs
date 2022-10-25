@@ -332,6 +332,14 @@ parser.add_argument(
     dest="polarisation",
 )
 
+parser.add_argument(
+    "--add-reliability",
+    default=False,
+    action="store_true",
+    help="Extract reliability variable",
+    dest="reliability",
+)
+
 args = parser.parse_args()
 
 # ---------------------------------------------------------------------
@@ -378,6 +386,9 @@ for net, lst in networks.items():
     if args.polarisation:
         # Append columns related to polarisation experiments
         cols.extend(["mistrust", "antiupdating"])
+            
+    if args.reliability:
+        cols.extend(["reliability"])
 
     for result in lst:
 
@@ -395,6 +406,10 @@ for net, lst in networks.items():
             meta.update(
                 [("mistrust", params.mistrust), ("antiupdating", params.antiupdating)]
             )
+            
+        # Extend reliability parameter
+        if args.reliability:
+            meta.update([("reliability", params.reliability)])
 
         # Ensure that data contains at least the default columns
         assert _containsdefaultcolumns(data), f"Missing default columns in {result}"
