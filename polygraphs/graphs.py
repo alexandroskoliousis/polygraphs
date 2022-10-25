@@ -28,7 +28,7 @@ def _buckleup(graph, exist_ok=False):
         # Assert |E'| = |E|
         assert len(graph.edges()) == count
     # Add self-loops for each node in the graph and return a new graph
-    return dgl.transform.add_self_loop(graph)
+    return dgl.transforms.add_self_loop(graph)
 
 
 def sample_(selfloop=True):

@@ -8,6 +8,15 @@
 $ python3 -m venv .venv
 $ source .venv/bin/activate
 $ pip install --upgrade pip
+$ pip install -e .
+$ python -m dgl.backend.set_default_backend . pytorch
+```
+On macos, you may need to install some packages via homebrew, such as `hd5`, `cython` and `yaml`. 
+
+For Conda environments:
+```bash
+$ conda env create -n polygraphs --file environment.yml
+$ source activate polygraphs
 $ python setup.py install
 $ python -m dgl.backend.set_default_backend pytorch
 ```
@@ -35,6 +44,7 @@ $ python -V
 Python 3.8.1
 $ git clone git@github.com:<account name>/polygraphs.git
 $ cd polygraphs
+$ echo "export PYTHONPATH=$PWD:$PYTHONPATH" >> ~/.bashrc
 $ python3 -m venv .venv
 $ source .venv/bin/activate
 (.venv) $ pip install --upgrade pip
@@ -46,6 +56,10 @@ $ source .venv/bin/activate
 Once on the allocated machine (say `vm`), run:
 ```
 (.venv) [vm] $ python run.py -f configs/test.yaml
+```
+To gather the results from the simulation into a CSV file run
+```
+(.venv) [vm] $ python scripts/gather.py
 ```
 
 ## Generating and running job array configurations

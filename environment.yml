@@ -1,0 +1,9 @@
+name: polygraphs
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - jupyterlab
+  - tqdm
+  - fsspec
+  - ipywidgets
