@@ -14,7 +14,7 @@ from .common import (
     OConnorWeatherallSquareDistanceOp,
 )
 
-from .complex import UnreliableNetworkBasicGullibleOp, UnreliableNetworkBasicAlignedOp
+from .complex import UnreliableNetworkBasicGullibleOp, UnreliableNetworkBasicAlignedOp, UnreliableNetworkBasicUnalignedOp
 
 
 __all__ = [
@@ -25,7 +25,8 @@ __all__ = [
     "OConnorWeatherallSquareRootDistanceOp",
     "OConnorWeatherallSquareDistanceOp",
     "UnreliableNetworkBasicGullibleOp",
-    "UnreliableNetworkBasicAlignedOp"
+    "UnreliableNetworkBasicAlignedOp",
+    "UnreliableNetworkBasicUnalignedOp"
 ]
 
 
