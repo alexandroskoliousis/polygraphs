@@ -11,12 +11,12 @@ $ pip install --upgrade pip
 $ pip install -e .
 $ python -m dgl.backend.set_default_backend . pytorch
 ```
-On macos, you may need to install some packages via homebrew, such as `hd5`, `cython` and `yaml`. 
+On macos, you may need to install some packages via homebrew, such as `hd5`, `cython` and `yaml`.
 
-For Conda environments:
+For a conda environment:
 ```bash
 $ conda env create -n polygraphs --file environment.yml
-$ source activate polygraphs
+$ conda activate polygraphs
 $ python setup.py install
 $ python -m dgl.backend.set_default_backend pytorch
 ```
@@ -38,7 +38,7 @@ $ ssh username@login.discovery.neu.edu
 [username@login-00 ~] $
 ```
 For succinctness, I ommit the prefix `[username@login-00 ~]` in the following commands:
-```
+```bash
 $ module load python
 $ python -V
 Python 3.8.1
@@ -54,16 +54,39 @@ $ source .venv/bin/activate
 (.venv) $ srun --partition=short --nodes=1 --ntasks=1 --cpus-per-task=8 --mem=64GB --export=ALL --pty /bin/bash
 ```
 Once on the allocated machine (say `vm`), run:
-```
+```bash
 (.venv) [vm] $ python run.py -f configs/test.yaml
 ```
-To gather the results from the simulation into a CSV file run
-```
-(.venv) [vm] $ python scripts/gather.py
-```
 
-## Generating and running job array configurations
+### Generating and running job array configurations
 ```bash
 (.venv) $ python scripts/job-array-generator.py -f configs/zollman-effect/zollman-effect.yaml -e configs/explorables.json
 (.venv) $ sbatch run-array.script
+```
+
+## Gathering Simulation Results
+
+To gather results after simulations have run into a CSV file for analysis:
+```bash
+$ python scripts/gather.py
+```
+This will load simulation files from the default result location `~/polygraphs-cache/` and export the CSV in the same directory.
+
+### Optional Arguments
+
+- `-f`: Specify location of results folder
+- `-n`: Networks to filter (seperated by spaces)
+- `--add-polarisation`: Extract polarisation hyper-parameters
+- `--add-reliability`: Extract reliability hyper-parameters
+
+Examples:
+```bash
+# Add polarisation hyper-parameter column
+$ python scripts/gather.py --add-polarisation
+
+# Extract only complete networks and add reliability parameter
+$ python scripts/gather.py -n complete --add-reliability
+
+# Extract results from a specific folder
+$ python scripts/gather.py -f ~/polygraphs-cache/results/2022-10-01
 ```
