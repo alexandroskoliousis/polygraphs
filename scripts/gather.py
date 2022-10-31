@@ -325,10 +325,10 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--no-polarisation",
-    default=True,
-    action="store_false",
-    help="Do not extract hyper-parameters related to polarisation",
+    "--add-polarisation",
+    default=False,
+    action="store_true",
+    help="Extract polarisation hyper-parameters",
     dest="polarisation",
 )
 
@@ -336,7 +336,7 @@ parser.add_argument(
     "--add-reliability",
     default=False,
     action="store_true",
-    help="Extract reliability variable",
+    help="Extract reliability hyper-parameters",
     dest="reliability",
 )
 
@@ -383,11 +383,13 @@ for net, lst in networks.items():
 
     # Default column list
     cols = list(_default_columns.union(extractor(None)))
+    
     if args.polarisation:
         # Append columns related to polarisation experiments
         cols.extend(["mistrust", "antiupdating"])
             
     if args.reliability:
+        # Add column for reliability hyper-parameter
         cols.extend(["reliability"])
 
     for result in lst:
