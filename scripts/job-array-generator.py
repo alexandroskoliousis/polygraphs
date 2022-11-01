@@ -2,6 +2,7 @@
 Generates job array configurations.
 """
 import os
+import datetime
 
 from polygraphs import cli
 from polygraphs import hyperparameters as hp
@@ -49,6 +50,14 @@ if __name__ == "__main__":
     # Set destination directory
     directory = os.path.join(args.store, args.array)
 
+    # Create directories for Slurm output
+    date = datetime.date.today().strftime("%Y-%m-%d")
+    slurm_path = os.path.join(os.path.expanduser( '~/polygraphs-cache/slurm' ), date)
+
+    if not(os.path.exists(slurm_path) and os.path.isdir(slurm_path)):
+        os.makedirs(slurm_path)
+
+
     for idx, config in enumerate(configurations):
         # Job id
         jid = idx + 1
@@ -74,6 +83,9 @@ if __name__ == "__main__":
     f.write("#SBATCH --time=24:00:00\n")
     f.write("#SBATCH --export=ALL\n")
     f.write("#SBATCH --array=1-{}\n".format(jid))
+    f.write("#SBATCH --job-name={}\n".format(args.array))
+    f.write("#SBATCH --output={}/{}-slurm-%A_%a.out\n".format(slurm_path, args.array))
+    f.write("#SBATCH --error={}/{}-slurm-%A_%a.err\n".format(slurm_path, args.array))
     f.write(
         "python run.py -f {}/{}-${{SLURM_ARRAY_TASK_ID}}.json\n".format(
             directory, args.array

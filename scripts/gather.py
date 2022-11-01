@@ -298,14 +298,14 @@ def density(graph):
 parser = argparse.ArgumentParser(
     description="Process results data from simulations.",
     epilog="Passing no arguments will load results from the"
-    " default location ~/polygraphs-cache",
+    " default location of ~/polygraphs-cache/results",
 )
 
 parser.add_argument(
     "-f",
     type=str,
     required=False,
-    default=["~/polygraphs-cache/"],
+    default=[os.getenv("POLYGRAPHS_CACHE") or "~/polygraphs-cache/results"],
     nargs=1,
     metavar="",
     dest="results",
@@ -383,11 +383,11 @@ for net, lst in networks.items():
 
     # Default column list
     cols = list(_default_columns.union(extractor(None)))
-    
+
     if args.polarisation:
         # Append columns related to polarisation experiments
         cols.extend(["mistrust", "antiupdating"])
-            
+
     if args.reliability:
         # Add column for reliability hyper-parameter
         cols.extend(["reliability"])
@@ -408,7 +408,7 @@ for net, lst in networks.items():
             meta.update(
                 [("mistrust", params.mistrust), ("antiupdating", params.antiupdating)]
             )
-            
+
         # Extend reliability parameter
         if args.reliability:
             meta.update([("reliability", params.reliability)])

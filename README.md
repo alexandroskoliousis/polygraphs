@@ -60,7 +60,7 @@ Once on the allocated machine (say `vm`), run:
 
 ### Generating and running job array configurations
 ```bash
-(.venv) $ python scripts/job-array-generator.py -f configs/zollman-effect/zollman-effect.yaml -e configs/explorables.json
+(.venv) $ python scripts/job-array-generator.py -f configs/zollman-effect/zollman-effect.yaml -e configs/explorables.json -a test
 (.venv) $ sbatch run-array.script
 ```
 
@@ -70,7 +70,7 @@ To gather results after simulations have run into a CSV file for analysis:
 ```bash
 $ python scripts/gather.py
 ```
-This will load simulation files from the default result location `~/polygraphs-cache/` and export the CSV in the same directory.
+This will load simulation results from the default location of `~/polygraphs-cache/results` and exports the CSV file in the same folder.
 
 ### Optional Arguments
 
@@ -82,11 +82,11 @@ This will load simulation files from the default result location `~/polygraphs-c
 Examples:
 ```bash
 # Add polarisation hyper-parameter column
-$ python scripts/gather.py --add-polarisation
+(.venv) $ python scripts/gather.py --add-polarisation
 
 # Extract only complete networks and add reliability parameter
-$ python scripts/gather.py -n complete --add-reliability
+(.venv) $ python scripts/gather.py -n complete --add-reliability
 
 # Extract results from a specific folder
-$ python scripts/gather.py -f ~/polygraphs-cache/results/2022-10-01
+(.venv) $ python scripts/gather.py -f ~/polygraphs-cache/results/2022-10-01
 ```
