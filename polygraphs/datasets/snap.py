@@ -160,7 +160,6 @@ class LiveJournal1(SNAPDataset):
 
 
 class EmailEUCore(SNAPDataset):
-
     def __init__(self):
         super().__init__(
             folder="email-eu-core",
@@ -169,11 +168,18 @@ class EmailEUCore(SNAPDataset):
 
 
 class EmailEUAll(SNAPDataset):
-
     def __init__(self):
         super().__init__(
             folder="email-eu-all",
             edges=urljoin(_SNAP, "data/email-EuAll.txt.gz"),
+        )
+
+
+class CollegeMsg(SNAPDataset):
+    def __init__(self):
+        super().__init__(
+            folder="college-msg",
+            edges=urljoin(_SNAP, "data/CollegeMsg.txt.gz"),
         )
 
 
