@@ -18,7 +18,7 @@ For a conda environment:
 $ conda env create -n polygraphs --file environment.yml
 $ conda activate polygraphs
 $ python setup.py install
-$ python -m dgl.backend.set_default_backend pytorch
+$ python -m dgl.backend.set_default_backend . pytorch
 ```
 
 ## Quick Start: Google Colaboratory
