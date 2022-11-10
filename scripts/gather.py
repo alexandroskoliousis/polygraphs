@@ -1,8 +1,8 @@
 """
 Script for gathering sim data into a csv
 
-Results should be in ~/polygraphs-cache, the csv fill will be created
-in the parent directory of the results
+Results should be in ~/polygraphs-cache/results, the csv fill will be created
+in the same folder
 
 Run `python gather.py -h` for help
 
@@ -448,8 +448,7 @@ for net, lst in networks.items():
         count = len(data)
         digits = len(str(count))
 
-        # Graph property collections:
-        #
+        # Graph property collections
         # Graph density
         d = []
         # Graph clustering coefficient
@@ -457,7 +456,7 @@ for net, lst in networks.items():
         # File paths
         f = []
 
-        # subbar = tbar(count, position=0, leave=True, colour="red", unit="simulations")
+        subbar = tbar(count, position=0, leave=True, colour="red", unit="simulations")
 
         for idx in range(count):
 
@@ -466,25 +465,23 @@ for net, lst in networks.items():
             assert os.path.exists(filepath), f"File not found: {filepath}"
 
             # Load graph from file
-            # graphs, _ = dgl.load_graphs(filepath)
-            # graph = graphs[0]
+            graphs, _ = dgl.load_graphs(filepath)
+            graph = graphs[0]
 
             # Remove self-loops
-            # graph = dgl.remove_self_loop(graph)
+            graph = dgl.remove_self_loop(graph)
 
             # convert graph to networkx format
-            # graphx = dgl.to_networkx(graph)
+            graphx = dgl.to_networkx(graph)
 
             # Collect graph statistics
-            # d.append(density(graphx))
-            # k.append(acc(graphx))
-            d.append(1.0)
-            k.append(1.0)
+            d.append(density(graphx))
+            k.append(acc(graphx))
 
             # Collect paths to graphs
             f.append(os.path.relpath(filepath, start=args.results[0]))
 
-            # subbar.update()
+            subbar.update()
 
         # Add graph analytics to result
         data["density"] = d
