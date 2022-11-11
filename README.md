@@ -68,7 +68,7 @@ Once on the allocated machine (say `vm`), run:
 
 To gather results after simulations have run into a CSV file for analysis:
 ```bash
-$ python scripts/gather.py
+(.venv) $ python scripts/gather.py
 ```
 This will load simulation results from the default location of `~/polygraphs-cache/results` and exports the CSV file in the same folder.
 
@@ -78,6 +78,7 @@ This will load simulation results from the default location of `~/polygraphs-cac
 - `-n`: Networks to filter (seperated by spaces)
 - `--add-polarisation`: Extract polarisation hyper-parameters
 - `--add-reliability`: Extract reliability hyper-parameters
+- `--add-statistics`: Extract network statistics (clustering, density)
 
 Examples:
 ```bash
