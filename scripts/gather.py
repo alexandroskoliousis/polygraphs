@@ -340,6 +340,14 @@ parser.add_argument(
     dest="reliability",
 )
 
+parser.add_argument(
+    "--add-statistics",
+    default=False,
+    action="store_true",
+    help="Extract network statistics",
+    dest="statistics",
+)
+
 args = parser.parse_args()
 
 # ---------------------------------------------------------------------
@@ -463,20 +471,24 @@ for net, lst in networks.items():
             filename = f"{{:0{digits}}}.bin".format(idx + 1)
             filepath = os.path.join(directory, filename)
             assert os.path.exists(filepath), f"File not found: {filepath}"
+            
+            if args.statistics:
+                # Load graph from file
+                graphs, _ = dgl.load_graphs(filepath)
+                graph = graphs[0]
 
-            # Load graph from file
-            graphs, _ = dgl.load_graphs(filepath)
-            graph = graphs[0]
+                # Remove self-loops
+                graph = dgl.remove_self_loop(graph)
 
-            # Remove self-loops
-            graph = dgl.remove_self_loop(graph)
+                # convert graph to networkx format
+                graphx = dgl.to_networkx(graph)
 
-            # convert graph to networkx format
-            graphx = dgl.to_networkx(graph)
-
-            # Collect graph statistics
-            d.append(density(graphx))
-            k.append(acc(graphx))
+                # Collect graph statistics
+                d.append(density(graphx))
+                k.append(acc(graphx))
+            else:
+                d.append(1.0)
+                k.append(1.0)
 
             # Collect paths to graphs
             f.append(os.path.relpath(filepath, start=args.results[0]))
