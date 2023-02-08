@@ -1,0 +1,21 @@
+# Initial beliefs are random uniform between 0 and 1
+init.kind: 'uniform'
+# Chance that action B is better than action A
+epsilon: 0.001
+# Kind and size of network (a complete network with 10 agents)
+network.kind: 'snap'
+network.snap.name: 'EmailEUAll'
+
+# Enable logging; print progress every 100 steps
+logging.enabled: True
+logging.interval: 1
+
+# Run 1,000 steps per simulation; repeat simulation 10 times
+simulation.steps: 10
+simulation.repeats: 2
+
+# Set seed
+seed: 123456789
+
+# Set model
+op: "BalaGoyalOp"

@@ -19,6 +19,13 @@ if __name__ == "__main__":
         # Use defaults (not recommended)
         params = hp.PolyGraphHyperParameters()
 
+    # Set random seed
+    if params.seed is not None:
+        # Ensure it is an integer
+        assert isinstance(params.seed, int) and not params.seed < 0, "Invalid seed"
+        if params.seed > 0:
+            pg.random(params.seed)
+
     # Both functions return a `PolyGraphSimulation` object
     if args.explorables:
         _ = pg.explore(params, args.explorables)
