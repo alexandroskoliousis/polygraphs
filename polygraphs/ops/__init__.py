@@ -11,11 +11,13 @@ from .common import (
     BalaGoyalOp,
     OConnorWeatherallOp,
     OConnorWeatherallSquareRootDistanceOp,
-    OConnorWeatherallSquareDistanceOp,
+    OConnorWeatherallSquareDistanceOp
 )
 
 from .complex import UnreliableNetworkBasicGullibleOp, UnreliableNetworkBasicAlignedOp, UnreliableNetworkBasicUnalignedOp
 
+
+from .weightedops import BalaGoyalWeighted2Op, BalaGoyalWeightedOp
 
 __all__ = [
     "PolyGraphOp",
@@ -26,7 +28,9 @@ __all__ = [
     "OConnorWeatherallSquareDistanceOp",
     "UnreliableNetworkBasicGullibleOp",
     "UnreliableNetworkBasicAlignedOp",
-    "UnreliableNetworkBasicUnalignedOp"
+    "UnreliableNetworkBasicUnalignedOp",
+    "BalaGoyalWeightedOp",
+    "BalaGoyalWeighted2Op"
 ]
 
 
