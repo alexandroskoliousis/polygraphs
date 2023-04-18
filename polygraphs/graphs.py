@@ -358,6 +358,12 @@ def ogb(params):
 
 
 def francisbacon(params):
+    """
+    Returns a Six Degrees of Francis Bacon Network.
+    The GML file of the graph must be generated manually because the
+    dataset is dynamic. See the sixdegreesoffrancisbacon notebook in
+    the scripts folder.
+    """
     from .datasets import francisbacon
     dataset = francisbacon.FrancisBacon()
     graph = dataset.read()

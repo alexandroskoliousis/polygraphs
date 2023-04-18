@@ -26,6 +26,8 @@ class FrancisBacon(PolyGraphDataset):
           data cache:
           ~/polygraphs-cache/data/francisbacon/francisbacon.gml.gz
 
+          This file can be generated using the sixdegreesoffrancisbacon.ipynb
+          notebook inside the scripts folder.
     """
 
     def __init__(self):
