@@ -357,6 +357,17 @@ def ogb(params):
     return graph
 
 
+def francisbacon(params):
+    from .datasets import francisbacon
+    dataset = francisbacon.FrancisBacon()
+    graph = dataset.read()
+    # Try adding self-loops
+    if params.selfloop:
+        graph = _buckleup(graph)
+    params.size = graph.num_nodes()
+    return graph
+
+
 def create(params):
     """
     Returns a GDL graph of given type and size.
