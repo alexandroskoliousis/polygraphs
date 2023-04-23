@@ -41,6 +41,12 @@ class FrancisBacon(PolyGraphDataset):
         assert os.path.isdir(self.folder)
         gml_file = os.path.join(self.folder, "francisbacon.gml.gz")
         assert os.path.isfile(gml_file), "File not found: francisbacon.gml.gz"
+
+        # Load graph from GML file
         G = nx.read_gml(gml_file, destringizer=int)
-        graph = dgl.from_networkx(G)
+
+        # Load graph using edge list so that we preserve node ids
+        edges = [torch.tensor((edge[0], edge[1])) for edge in list(nx.to_edgelist(G))]
+        graph = dgl.graph(edges)
+
         return graph
