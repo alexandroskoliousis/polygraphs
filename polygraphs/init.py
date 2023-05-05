@@ -102,6 +102,23 @@ def halfs(size, params=None):
     return tensor
 
 
+def set_node_beliefs(beliefs, size, params):
+    """
+    Sets initial beliefs for specific nodes passed as a dictionary
+    -- params.init.beliefs: { node: belief, ... }
+    """
+    if isinstance(params.beliefs, dict):
+        for k, v in params.beliefs.items():
+            node = int(k)
+            if node < size[0]:
+                beliefs[node] = float(v)
+            else:
+                raise Exception(f"Error setting node belief: {k} out of bounds")
+    else:
+        raise Exception(f"Node belief initialisation should be a dict: {params.beliefs}")
+    return beliefs
+
+
 def init(size, params):
     """
     Initializes values a tensor of given shape and parameters.
@@ -112,4 +129,7 @@ def init(size, params):
     initializer = members.get(params.kind)
     if initializer is None:
         raise Exception(f"Invalid initializer type: {params.kind}")
-    return initializer(size, params=params)
+    init_beliefs = initializer(size, params=params)
+    # Set individual node beliefs
+    beliefs = set_node_beliefs(init_beliefs, size, params)
+    return beliefs

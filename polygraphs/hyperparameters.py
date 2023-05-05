@@ -192,7 +192,7 @@ class HyperParameters:
         if not dest:
             dest = cls()
         return cls._merge(dest, data)
-    
+
     @classmethod
     def fromJSON_(cls, fstream):
         data = json.load(fstream)
@@ -386,6 +386,8 @@ class InitHyperParameters(HyperParameters):
         )
         # Constant initializer
         self.add(constant=HyperParameters(value=None))
+        # Specific node beliefs after initialisation
+        self.add(beliefs=HyperParameters())
 
 
 class SimulationHyperParameters(HyperParameters):

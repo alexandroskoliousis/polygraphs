@@ -48,7 +48,7 @@ class FrancisBacon(PolyGraphDataset):
         # Load graph using edge list so that we preserve node ids
         edges = [torch.tensor((edge[0], edge[1])) for edge in list(nx.to_edgelist(G))]
         graph = dgl.graph(edges)
-        # Convert to a bi-directed DGL graph becuase this is an undirected graph
+        # Convert to a bi-directed DGL graph because this is an undirected graph
         graph = dgl.to_bidirected(graph)
 
         return graph
