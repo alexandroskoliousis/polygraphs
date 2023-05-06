@@ -41,6 +41,9 @@ class UnreliableNetworkBasicGullibleOp(BalaGoyalOp):
         # (1s denote reliable nodes)
         self._reliability = torch.bernoulli(torch.ones(size) * params.reliability)
 
+        # Store network reliability
+        graph.ndata["reliability"] = self._reliability.to(device=self._device)
+
         # Count number of reliable nodes (for debugging purposes)
         nr = torch.count_nonzero(self._reliability)
         log.info(f"{nr.item()} out of {graph.num_nodes()} nodes are reliable")
