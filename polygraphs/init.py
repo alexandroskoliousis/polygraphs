@@ -107,16 +107,15 @@ def set_node_beliefs(beliefs, size, params):
     Sets initial beliefs for specific nodes passed as a dictionary
     -- params.init.beliefs: { node: belief, ... }
     """
-    # Check that params.beliefs is a dict
-    if not isinstance(params.beliefs, dict):
-        raise Exception(f"Node belief initialisation should be a dict: {params.beliefs}")
-    # Update each node/key with value
-    for k, v in params.beliefs.items():
-        node = int(k)
-        if node < size[0]:
-            beliefs[node] = float(v)
-        else:
-            raise Exception(f"Error setting node belief: {k} out of bounds")
+    if isinstance(params.beliefs, dict):
+        # Update each node/key with value
+        for k, v in params.beliefs.items():
+            node = int(k)
+            if node < size[0]:
+                beliefs[node] = float(v)
+            else:
+                raise Exception(f"Error setting node belief: {k} out of bounds")
+
     return beliefs
 
 
