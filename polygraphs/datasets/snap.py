@@ -209,10 +209,12 @@ class CollegeMsg(SNAPDataset):
     'snap.stanford.edu/data/CollegeMsg.html'
 
     Basic dataset statistics:
+
         Nodes:  1,899
         Edges: 20,296
 
     Other information:
+
         - The network is directed.
     """
     def __init__(self):
