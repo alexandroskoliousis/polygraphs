@@ -140,7 +140,8 @@ class EgoFacebook(SNAPDataset):
 
 class LiveJournal1(SNAPDataset):
     """
-    LiveJournal social network from 'https://snap.stanford.edu/data/soc-LiveJournal1.html'
+    LiveJournal social network from
+    'https://snap.stanford.edu/data/soc-LiveJournal1.html'
 
     Basic dataset statistics:
 
@@ -150,6 +151,7 @@ class LiveJournal1(SNAPDataset):
     Other information:
 
         - The network is directed.
+
     """
 
     def __init__(self):
@@ -160,6 +162,19 @@ class LiveJournal1(SNAPDataset):
 
 
 class EmailEUCore(SNAPDataset):
+    """
+    email-Eu-core network containing only links within the
+    insitution from 'snap.stanford.edu/data/email-Eu-core.html'
+
+    Basic dataset statistics:
+
+        Nodes:  1,005
+        Edges: 25,571
+
+    Other information:
+
+        - The network is directed.
+    """
     def __init__(self):
         super().__init__(
             folder="email-eu-core",
@@ -168,6 +183,19 @@ class EmailEUCore(SNAPDataset):
 
 
 class EmailEUAll(SNAPDataset):
+    """
+    EU email communication network from
+    'snap.stanford.edu/data/email-EuAll.html'
+
+    Basic dataset statistics:
+
+        Nodes: 265,214
+        Edges: 420,045
+
+    Other information:
+
+        - The network is directed.
+    """
     def __init__(self):
         super().__init__(
             folder="email-eu-all",
@@ -176,6 +204,17 @@ class EmailEUAll(SNAPDataset):
 
 
 class CollegeMsg(SNAPDataset):
+    """
+    Messages on a Facebook-like platform at UC-Irvine
+    'snap.stanford.edu/data/CollegeMsg.html'
+
+    Basic dataset statistics:
+        Nodes:  1,899
+        Edges: 20,296
+
+    Other information:
+        - The network is directed.
+    """
     def __init__(self):
         super().__init__(
             folder="college-msg",
