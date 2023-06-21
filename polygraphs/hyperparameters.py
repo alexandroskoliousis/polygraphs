@@ -468,6 +468,7 @@ class PolyGraphHyperParameters(HyperParameters):
         # Parameters related to testimonials and epistemic injustice
         self.add(reliability=1.0)
         self.add(trust=0.0)
+        self.add(unreliablenodes=[])
 
         # Parameters related to belief initilisation
         self.add(init=InitHyperParameters())

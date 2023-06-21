@@ -14,7 +14,15 @@ from .common import (
     OConnorWeatherallSquareDistanceOp
 )
 
-from .complex import UnreliableNetworkBasicGullibleOp, UnreliableNetworkBasicAlignedOp, UnreliableNetworkBasicUnalignedOp
+from .complex import (
+    UnreliableNetworkBasicGullibleUniformOp,
+    UnreliableNetworkBasicGullibleBinomialOp,
+    UnreliableNetworkBasicGullibleNegativeEpsOp,
+    UnreliableNetworkBasicAlignedUniformOp,
+    UnreliableNetworkBasicAlignedBinomialOp,
+    UnreliableNetworkBasicAlignedNegativeEpsOp,
+    UnreliableNetworkBasicUnalignedUniformOp
+)
 
 
 from .weightedops import BalaGoyalWeighted2Op, BalaGoyalWeightedOp
@@ -26,9 +34,13 @@ __all__ = [
     "OConnorWeatherallOp",
     "OConnorWeatherallSquareRootDistanceOp",
     "OConnorWeatherallSquareDistanceOp",
-    "UnreliableNetworkBasicGullibleOp",
-    "UnreliableNetworkBasicAlignedOp",
-    "UnreliableNetworkBasicUnalignedOp",
+    "UnreliableNetworkBasicGullibleUniformOp",
+    "UnreliableNetworkBasicGullibleBinomialOp",
+    "UnreliableNetworkBasicGullibleNegativeEpsOp",
+    "UnreliableNetworkBasicAlignedUniformOp",
+    "UnreliableNetworkBasicAlignedBinomialOp",
+    "UnreliableNetworkBasicAlignedNegativeEpsOp",
+    "UnreliableNetworkBasicUnalignedUniformOp",
     "BalaGoyalWeightedOp",
     "BalaGoyalWeighted2Op"
 ]

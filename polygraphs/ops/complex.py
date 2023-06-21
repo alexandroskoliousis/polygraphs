@@ -14,7 +14,7 @@ from ..logger import getlogger
 log = getlogger()
 
 
-class UnreliableNetworkBasicGullibleOp(BalaGoyalOp):
+class UnreliableNetworkBasicGullibleUniformOp(BalaGoyalOp):
     """
     Unreliable networks, Part 1
 
@@ -31,7 +31,7 @@ class UnreliableNetworkBasicGullibleOp(BalaGoyalOp):
         size = (graph.num_nodes(),)
 
         # Create uniform sampler for unreliable nodes
-        self._uniform_sampler = torch.distributions.uniform.Uniform(
+        self._unreliable_sampler = torch.distributions.uniform.Uniform(
             init.zeros(size), init.zeros(size) + (params.trials + 1)
         )
 
@@ -40,6 +40,10 @@ class UnreliableNetworkBasicGullibleOp(BalaGoyalOp):
         # Draw binary numbers from a Bernoulli distribution
         # (1s denote reliable nodes)
         self._reliability = torch.bernoulli(torch.ones(size) * params.reliability)
+
+        # Given a list of unreliable nodes, make them unreliable
+        for node in params.unreliablenodes:
+            self._reliability[node] = 0
 
         # Store network reliability
         graph.ndata["reliability"] = self._reliability.to(device=self._device)
@@ -59,13 +63,102 @@ class UnreliableNetworkBasicGullibleOp(BalaGoyalOp):
         b = self._sampler.sample()
 
         # Sample uniform distribution
-        u = self._uniform_sampler.sample()
+        u = self._unreliable_sampler.sample()
 
         # Combine samples
         return b * self._reliability + u * (1 - self._reliability)
 
 
-class UnreliableNetworkBasicAlignedOp(BalaGoyalOp):
+class UnreliableNetworkBasicGullibleBinomialOp(UnreliableNetworkBasicGullibleUniformOp):
+    """
+    Unreliable nodes' evidence follow a binomial distribution
+    with epsilon of 0/p = 0.5.
+
+    Upon receipt, all nodes apply Bayes rule.
+    """
+
+    def __init__(self, graph, params):
+        super().__init__(graph, params)
+
+        # The shape of all node attributes
+        size = (graph.num_nodes(),)
+
+        # Unreliable Binomial Sampler:
+        # Payoff: p = 0.5, epsilon = 0
+        probs = init.halfs(size)
+
+        # Number of Bernoulli trials
+        count = init.zeros(size) + params.trials
+
+        # Each node gets a private signal that provides information
+        # about whether action B is indeed a good action
+        self._unreliable_sampler = torch.distributions.binomial.Binomial(
+            total_count=count, probs=probs
+        )
+
+        # Given a list of unreliable nodes, make them unreliable
+        for node in params.unreliablenodes:
+            self._reliability[node] = 0
+
+        # Configure network reliability:
+        #
+        # Draw binary numbers from a Bernoulli distribution
+        # (1s denote reliable nodes)
+        self._reliability = torch.bernoulli(torch.ones(size) * params.reliability)
+
+        # Store network reliability
+        graph.ndata["reliability"] = self._reliability.to(device=self._device)
+
+        # Count number of reliable nodes (for debugging purposes)
+        nr = torch.count_nonzero(self._reliability)
+        log.info(f"{nr.item()} out of {graph.num_nodes()} nodes are reliable")
+
+
+class UnreliableNetworkBasicGullibleNegativeEpsOp(UnreliableNetworkBasicGullibleUniformOp):
+    """
+    Unreliable nodes' evidence follow a binomial distribution
+    with a negative epsilon.
+
+    Upon receipt, all nodes apply Bayes rule.
+    """
+
+    def __init__(self, graph, params):
+        super().__init__(graph, params)
+
+        # The shape of all node attributes
+        size = (graph.num_nodes(),)
+
+        # Unreliable Binomial Sampler with a negative epsilon
+        probs = init.halfs(size) - params.epsilon
+
+        # Number of Bernoulli trials
+        count = init.zeros(size) + params.trials
+
+        # Each node gets a private signal that provides information
+        # about whether action B is indeed a good action
+        self._unreliable_sampler = torch.distributions.binomial.Binomial(
+            total_count=count, probs=probs
+        )
+
+        # Configure network reliability:
+        #
+        # Draw binary numbers from a Bernoulli distribution
+        # (1s denote reliable nodes)
+        self._reliability = torch.bernoulli(torch.ones(size) * params.reliability)
+
+        # Given a list of unreliable nodes, make them unreliable
+        for node in params.unreliablenodes:
+            self._reliability[node] = 0
+
+        # Store network reliability
+        graph.ndata["reliability"] = self._reliability.to(device=self._device)
+
+        # Count number of reliable nodes (for debugging purposes)
+        nr = torch.count_nonzero(self._reliability)
+        log.info(f"{nr.item()} out of {graph.num_nodes()} nodes are reliable")
+
+
+class UnreliableNetworkBasicAlignedUniformOp(BalaGoyalOp):
     """
     Unreliable networks, Part 2
 
@@ -82,7 +175,7 @@ class UnreliableNetworkBasicAlignedOp(BalaGoyalOp):
         size = (graph.num_nodes(),)
 
         # Create uniform sampler
-        self._uniform_sampler = torch.distributions.uniform.Uniform(
+        self._unreliable_sampler = torch.distributions.uniform.Uniform(
             init.zeros(size), init.zeros(size) + (params.trials + 1)
         )
 
@@ -91,6 +184,10 @@ class UnreliableNetworkBasicAlignedOp(BalaGoyalOp):
         # Draw binary numbers from a Bernoulli distribution
         # (1s denote reliable nodes)
         self._reliability = torch.bernoulli(torch.ones(size) * params.reliability)
+
+        # Given a list of unreliable nodes, make them unreliable
+        for node in params.unreliablenodes:
+            self._reliability[node] = 0
 
         # Store network reliability
         graph.ndata["reliability"] = self._reliability.to(device=self._device)
@@ -110,7 +207,7 @@ class UnreliableNetworkBasicAlignedOp(BalaGoyalOp):
         b = self._sampler.sample()
 
         # Sample uniform distribution
-        u = self._uniform_sampler.sample()
+        u = self._unreliable_sampler.sample()
 
         # Combine samples
         return b * self._reliability + u * (1 - self._reliability)
@@ -166,7 +263,97 @@ class UnreliableNetworkBasicAlignedOp(BalaGoyalOp):
         return function
 
 
-class UnreliableNetworkBasicUnalignedOp(BalaGoyalOp):
+class UnreliableNetworkBasicAlignedBinomialOp(UnreliableNetworkBasicAlignedUniformOp):
+    """
+    Unreliable nodes' evidence follow a binomial distribution
+    with p=0.5/e=0
+
+    Upon receipt, all nodes apply Jeffrey's rule.
+    """
+
+    def __init__(self, graph, params):
+        super().__init__(graph, params)
+
+        # The shape of all node attributes
+        size = (graph.num_nodes(),)
+
+        # Unreliable Binomial Sampler:
+        # Payoff: p = 0.5, epsilon = 0
+        probs = init.halfs(size)
+
+        # Number of Bernoulli trials
+        count = init.zeros(size) + params.trials
+
+        # Each node gets a private signal that provides information
+        # about whether action B is indeed a good action
+        self._unreliable_sampler = torch.distributions.binomial.Binomial(
+            total_count=count, probs=probs
+        )
+
+        # Given a list of unreliable nodes, make them unreliable
+        for node in params.unreliablenodes:
+            self._reliability[node] = 0
+
+        # Configure network reliability:
+        #
+        # Draw binary numbers from a Bernoulli distribution
+        # (1s denote reliable nodes)
+        self._reliability = torch.bernoulli(torch.ones(size) * params.reliability)
+
+        # Store network reliability
+        graph.ndata["reliability"] = self._reliability.to(device=self._device)
+
+        # Count number of reliable nodes (for debugging purposes)
+        nr = torch.count_nonzero(self._reliability)
+        log.info(f"{nr.item()} out of {graph.num_nodes()} nodes are reliable")
+
+
+class UnreliableNetworkBasicAlignedNegativeEpsOp(UnreliableNetworkBasicAlignedUniformOp):
+    """
+    Unreliable nodes' evidence follow a binomial distribution
+    with a negative epsilon.
+
+    Upon receipt, all nodes apply Jeffrey's rule.
+    """
+
+    def __init__(self, graph, params):
+        super().__init__(graph, params)
+
+        # The shape of all node attributes
+        size = (graph.num_nodes(),)
+
+        # Unreliable Binomial Sampler:
+        # Payoff: p = 0.5, epsilon = - params.epsilon
+        probs = init.halfs(size) - params.epsilon
+
+        # Number of Bernoulli trials
+        count = init.zeros(size) + params.trials
+
+        # Each node gets a private signal that provides information
+        # about whether action B is indeed a good action
+        self._unreliable_sampler = torch.distributions.binomial.Binomial(
+            total_count=count, probs=probs
+        )
+
+        # Given a list of unreliable nodes, make them unreliable
+        for node in params.unreliablenodes:
+            self._reliability[node] = 0
+
+        # Configure network reliability:
+        #
+        # Draw binary numbers from a Bernoulli distribution
+        # (1s denote reliable nodes)
+        self._reliability = torch.bernoulli(torch.ones(size) * params.reliability)
+
+        # Store network reliability
+        graph.ndata["reliability"] = self._reliability.to(device=self._device)
+
+        # Count number of reliable nodes (for debugging purposes)
+        nr = torch.count_nonzero(self._reliability)
+        log.info(f"{nr.item()} out of {graph.num_nodes()} nodes are reliable")
+
+
+class UnreliableNetworkBasicUnalignedUniformOp(BalaGoyalOp):
     """
     Unreliable networks, Part 3
 
@@ -183,7 +370,7 @@ class UnreliableNetworkBasicUnalignedOp(BalaGoyalOp):
         size = (graph.num_nodes(),)
 
         # Create uniform sampler
-        self._uniform_sampler = torch.distributions.uniform.Uniform(
+        self._unreliable_sampler = torch.distributions.uniform.Uniform(
             init.zeros(size), init.zeros(size) + (params.trials + 1)
         )
 
@@ -192,6 +379,10 @@ class UnreliableNetworkBasicUnalignedOp(BalaGoyalOp):
         # Draw binary numbers from a Bernoulli distribution
         # (1s denote reliable nodes)
         self._reliability = torch.bernoulli(torch.ones(size) * params.reliability)
+
+        # Given a list of unreliable nodes, make them unreliable
+        for node in params.unreliablenodes:
+            self._reliability[node] = 0
 
         # Store network reliability
         graph.ndata["reliability"] = self._reliability.to(device=self._device)
@@ -217,7 +408,7 @@ class UnreliableNetworkBasicUnalignedOp(BalaGoyalOp):
         b = self._sampler.sample()
 
         # Sample uniform distribution
-        u = self._uniform_sampler.sample()
+        u = self._unreliable_sampler.sample()
 
         # Combine samples
         return b * self._reliability + u * (1 - self._reliability)
