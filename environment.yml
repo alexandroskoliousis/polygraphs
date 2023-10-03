@@ -2,8 +2,19 @@ name: polygraphs
 channels:
   - defaults
 dependencies:
-  - python=3.8
+  - python=3.11
   - jupyterlab
   - tqdm
   - fsspec
   - ipywidgets
+  - pytorch::pytorch
+  - h5py
+  - fsspec
+  - matplotlib
+  - pylint
+  - flake8
+  - pyyaml
+  - pandas
+  - pip
+  - pip:
+      - dgl
