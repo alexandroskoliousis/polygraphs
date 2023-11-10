@@ -11,6 +11,7 @@ dependencies:
   - h5py
   - fsspec
   - matplotlib
+  - conda-forge::seaborn
   - pylint
   - flake8
   - pyyaml
