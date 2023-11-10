@@ -4,7 +4,7 @@ channels:
 dependencies:
   - python=3.11
   - jupyterlab
-  - tqdm
+  - tqdm=4.64.1
   - fsspec
   - ipywidgets
   - pytorch::pytorch
