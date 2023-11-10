@@ -1,0 +1,6 @@
+:root {
+  --vp-c-indigo-1: hsl(204, 90%, 35%);
+  --vp-c-indigo-2: hsl(204, 90%, 30%);
+  --vp-c-indigo-3: hsl(204, 90%, 37%);
+  --vp-c-indigo-soft: hsla(204, 90%, 35%, 0.14);
+}

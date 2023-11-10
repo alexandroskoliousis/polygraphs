@@ -8,6 +8,12 @@ examples/data/
 .DS_Store
 TODO
 
+# Polygraphs Docs
+/docs/.vitepress/cache
+dist
+temp
+node_modules
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
