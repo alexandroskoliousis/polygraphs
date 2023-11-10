@@ -4,8 +4,35 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   title: "PolyGraphs",
   description: "Combatting Networks of Ignorance in the Misinformation Age",
+  head: [
+    [
+      "link",
+      {
+        rel: "icon",
+        href: "/favicon16x16.png",
+        sizes: "16x16",
+        type: "image/png",
+      },
+    ],
+    [
+      "link",
+      {
+        rel: "icon",
+        href: "/favicon32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+    ],
+    [
+      "link",
+      {
+        rel: "apple-touch-icon",
+        href: "/apple-touch-icon.png",
+      },
+    ],
+  ],
 
-  base: '/polygraphs/',
+  base: "/polygraphs/",
   cleanUrls: true,
 
   markdown: {
@@ -13,7 +40,7 @@ export default defineConfig({
   },
 
   themeConfig: {
-    // logo: { src: "/vitepress-logo-mini.svg", width: 24, height: 24 },
+    // logo: { src: "/polygraphs-logo-mini.svg", width: 24, height: 24 },
 
     nav: [
       {
