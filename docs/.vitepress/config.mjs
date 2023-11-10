@@ -5,7 +5,7 @@ export default defineConfig({
   title: "PolyGraphs",
   description: "Combatting Networks of Ignorance in the Misinformation Age",
 
-  base: '/polygraphs/'
+  base: '/polygraphs/',
   cleanUrls: true,
 
   markdown: {
