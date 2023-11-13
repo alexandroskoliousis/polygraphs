@@ -9,7 +9,7 @@ export default defineConfig({
       "link",
       {
         rel: "icon",
-        href: "/favicon16x16.png",
+        href: "/polygraphs/favicon16x16.png",
         sizes: "16x16",
         type: "image/png",
       },
@@ -18,7 +18,7 @@ export default defineConfig({
       "link",
       {
         rel: "icon",
-        href: "/favicon32x32.png",
+        href: "/polygraphs/favicon32x32.png",
         sizes: "32x32",
         type: "image/png",
       },
@@ -27,7 +27,7 @@ export default defineConfig({
       "link",
       {
         rel: "apple-touch-icon",
-        href: "/apple-touch-icon.png",
+        href: "/polygraphs/apple-touch-icon.png",
       },
     ],
   ],
