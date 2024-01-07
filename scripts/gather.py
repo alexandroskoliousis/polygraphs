@@ -235,6 +235,23 @@ def _snap(params):
     }
 
 
+def _karate(params):
+    """
+    Returns hyper-parameters associated with experiments on karate networks.
+    """
+    if params is None:
+        # Return only set of keys
+        return {"op", "kind", "size", "trials", "epsilon"}
+
+    return {
+        "op": params.op,
+        "kind": params.network.kind,
+        "size": params.network.size,
+        "trials": params.trials,
+        "epsilon": params.epsilon,
+    }
+
+
 extractors = {
     "complete": _complete,
     "wattsstrogatz": _wattsstrogatz,
@@ -243,6 +260,7 @@ extractors = {
     "cycle": _cycle,
     "star": _star,
     "snap": _snap,
+    "karate": _karate
 }
 
 
