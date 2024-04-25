@@ -1,0 +1,22 @@
+# Set seed
+seed: 123456789
+# Set model
+op: "BalaGoyalOp"
+# Initial agent beliefs are random uniform between 0 and 1
+init.kind: 'uniform'
+# Chance that action B is better than action A
+epsilon: 0.01
+# Per-agent trials
+trials: 10
+# Kind and size of network (a complete network with 10 agents)
+network.kind: 'complete'
+network.size: 16
+# Enable logging; print progress every 100 steps
+logging.enabled: True
+logging.interval: 100
+# Enable snapshots; take one every 100 steps
+snapshots.enabled: True
+snapshots.interval: 100
+# Run simulations until convergence; repeat simulation 10 times
+simulation.steps: 0
+simulation.repeats: 10
