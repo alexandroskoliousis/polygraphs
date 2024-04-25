@@ -1,12 +1,12 @@
 # Import necessary classes/modules
-from graphs.graph_converter import Graphs  # Import Graphs class for graph conversion
-from beliefs.belief_processor import (
+from .graphs.graph_converter import Graphs  # Import Graphs class for graph conversion
+from .beliefs.belief_processor import (
     Beliefs,
 )  # Import Beliefs class for belief processing
-from attributes.add_attributes import (
+from .attributes.add_attributes import (
     AddAttributes,
 )  # Import AddAttributes class for adding attributes
-from simulations.simulation_processor import (
+from .simulations.simulation_processor import (
     SimulationProcessor,
 )  # Import SimulationProcessor class for simulation processing
 
