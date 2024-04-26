@@ -16,22 +16,6 @@ class AddAttributes:
         ]
         self.dataframe["density"] = density_list
 
-    def majority(self, dataframe):
-        # Calculate majority belief for each graph in dataframe and add it as a new column
-        majority_list = []
-        for hd5_file_path, bin_file_path in zip(
-            dataframe["hd5_file_path"], dataframe["bin_file_path"]
-        ):
-            iterations = self.belief_processor.get_beliefs(
-                hd5_file_path, bin_file_path, self.graph_converter
-            )
-            majority_list.append(self.belief_processor.get_majority(iterations))
-        self.dataframe["majority"] = majority_list
-
-    def custom(self, dataframe):
-        # Add custom attributes to the dataframe (to be implemented)
-        pass
-
     def add_from_config(self, key_path):
         # Add values from a specified key_path in JSON config files to the dataframe
         values = []
