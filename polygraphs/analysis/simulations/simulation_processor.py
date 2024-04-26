@@ -71,7 +71,7 @@ class SimulationProcessor:
         # Process each subfolder and concatenate the results into the result DataFrame
         for folder in uuid_folders:
             subfolder_df = self.process_subfolder(folder)
-            result_df = pd.concat([result_df, subfolder_df], ignore_index=True)
+            result_df = pd.concat([result_df, subfolder_df.dropna(axis=1, how='all')], ignore_index=True)
 
         # Store the aggregated DataFrame in the class attribute `self.dataframe`
         self.dataframe = result_df
@@ -93,21 +93,31 @@ class SimulationProcessor:
         """
         # Get a list of files in the subfolder
         files = os.listdir(subfolder_path)
-        # Filter binary files and sort them based on their numerical order
-        bin_files = sorted(
-            [f for f in files if f.endswith(".bin")],
-            key=lambda x: int(re.search(r"(\d+)\.bin", x).group(1)),
-        )
+
         # Filter HDF5 files and sort them based on their numerical order
         hd5_files = sorted(
             [f for f in files if f.endswith(".hd5")],
             key=lambda x: int(re.search(r"(\d+)\.hd5", x).group(1)),
         )
+        
+        # Get bin files for simulations that ran and output a HDF5 file
+        bin_files = []
+        for f in hd5_files:
+            _bin_file = f.replace("hd5", "bin")
+            if _bin_file in files:
+                bin_files.append(_bin_file)
+            else:
+                hd5_files.remove(f)
+
+        # Stop processing subfolder if there were no simulations that ran
+        if len(hd5_files) == 0:
+            return pd.DataFrame()
+        
         # Check if there is a configuration JSON file in the subfolder
         config_file = [f for f in files if f == "configuration.json"]
         # Check if there is a CSV file in the subfolder
         csv_file = [f for f in files if f.endswith(".csv")]
-
+        
         # Initialize an empty DataFrame to store processed data
         df = pd.DataFrame()
         # Add paths to binary files to the DataFrame
