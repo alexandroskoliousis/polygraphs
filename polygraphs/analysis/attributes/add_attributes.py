@@ -16,7 +16,7 @@ class AddAttributes:
         ]
         self.dataframe["density"] = density_list
 
-    def add_from_config(self, key_path):
+    def add_config(self, key_path):
         # Add values from a specified key_path in JSON config files to the dataframe
         values = []
         for config_path in self.dataframe["config_json_path"]:

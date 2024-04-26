@@ -24,7 +24,7 @@ processor.get_beliefs(0)
 
 ## Add Parameters from Configuration
 ```python
-processor.add_from_config("snapshots.interval")
+processor.add_config("snapshots.interval")
 ```
 
 ## Creating Custom Columns
@@ -56,6 +56,6 @@ class MyPolygraphAnalysis(PolygraphAnalysis):
 ```python
 x = MyPolygraphAnalysis("~/polygraphs-cache/results")
 x.add(x.nodes(), x.majority())
-x.add_from_config("snapshots.interval", "reliability")
+x.add_config("snapshots.interval", "reliability")
 x.get()
 ```
