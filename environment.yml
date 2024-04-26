@@ -11,7 +11,6 @@ dependencies:
   - ipywidgets
   - pytorch=2.1.0
   - h5py
-  - fsspec
   - matplotlib
   - seaborn
   - pylint
