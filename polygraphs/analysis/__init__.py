@@ -1,7 +1,7 @@
-from .graphs.graph_converter import Graphs
-from .beliefs.belief_processor import Beliefs
-from .attributes.add_attributes import AddAttributes
-from .simulations.simulation_processor import SimulationProcessor
+from .graph_converter import Graphs
+from .belief_processor import Beliefs
+from .add_attributes import AddAttributes
+from .simulation_processor import SimulationProcessor
 
 
 class Processor(SimulationProcessor, AddAttributes):
