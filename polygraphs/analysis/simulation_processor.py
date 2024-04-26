@@ -12,12 +12,6 @@ class SimulationProcessor:
         self.graph_converter = graph_converter  # Object to convert graphs
         self.belief_processor = belief_processor  # Object to process beliefs
 
-    def _is_valid_uuid_folder(self, dirname):
-        # Check if the folder name is a valid UUID format
-        if len(dirname) == 32 and all(c in "0123456789abcdefABCDEF" for c in dirname):
-            return True
-        return False
-
     def extract_params(self, config_json_path):
         # Extract relevant parameters from a configuration JSON file
         with open(config_json_path, "r") as f:
@@ -50,17 +44,15 @@ class SimulationProcessor:
             self.path = os.path.expanduser(path)
 
         # Initialize a list to store paths of subfolders representing individual simulations
-        uuid_folders = []
+        # Include the root folder as one of the folder to search for simulations
+        folders = [path]
         try:
             # Walk through the directory tree starting from the specified path
             for dirpath, dirnames, filenames in os.walk(self.path):
                 for dirname in dirnames:
                     # Construct the full path of each subfolder
                     folder_path = os.path.join(dirpath, dirname)
-                    # Check if the folder name represents a valid UUID
-                    if self._is_valid_uuid_folder(dirname):
-                        # If it's a valid UUID folder, add its path to the list
-                        uuid_folders.append(folder_path)
+                    folders.append(folder_path)
         except (FileNotFoundError, PermissionError) as e:
             # Handle exceptions if there are issues accessing folders
             print(f"Error accessing folder: {e}")
@@ -69,9 +61,11 @@ class SimulationProcessor:
         result_df = pd.DataFrame()
 
         # Process each subfolder and concatenate the results into the result DataFrame
-        for folder in uuid_folders:
+        for folder in folders:
             subfolder_df = self.process_subfolder(folder)
-            result_df = pd.concat([result_df, subfolder_df.dropna(axis=1, how='all')], ignore_index=True)
+            result_df = pd.concat(
+                [result_df, subfolder_df.dropna(axis=1, how="all")], ignore_index=True
+            )
 
         # Store the aggregated DataFrame in the class attribute `self.dataframe`
         self.dataframe = result_df
@@ -99,7 +93,7 @@ class SimulationProcessor:
             [f for f in files if f.endswith(".hd5")],
             key=lambda x: int(re.search(r"(\d+)\.hd5", x).group(1)),
         )
-        
+
         # Get bin files for simulations that ran and output a HDF5 file
         bin_files = []
         for f in hd5_files:
@@ -112,12 +106,12 @@ class SimulationProcessor:
         # Stop processing subfolder if there were no simulations that ran
         if len(hd5_files) == 0:
             return pd.DataFrame()
-        
+
         # Check if there is a configuration JSON file in the subfolder
         config_file = [f for f in files if f == "configuration.json"]
         # Check if there is a CSV file in the subfolder
         csv_file = [f for f in files if f.endswith(".csv")]
-        
+
         # Initialize an empty DataFrame to store processed data
         df = pd.DataFrame()
         # Add paths to binary files to the DataFrame
