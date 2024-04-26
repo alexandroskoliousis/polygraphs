@@ -1,1 +1,0 @@
-# Gathering Results
