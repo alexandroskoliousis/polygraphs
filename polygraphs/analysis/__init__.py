@@ -4,9 +4,9 @@ from .attributes.add_attributes import AddAttributes
 from .simulations.simulation_processor import SimulationProcessor
 
 
-class PolygraphAnalysis(SimulationProcessor, AddAttributes):
+class Processor(SimulationProcessor, AddAttributes):
     """
-    PolygraphAnalysis class for performing analysis on simulation data.
+    Processor class for performing analysis on simulation data.
 
     This class inherits from SimulationProcessor and AddAttributes classes,
     allowing it to process simulation data and add attributes to it.
