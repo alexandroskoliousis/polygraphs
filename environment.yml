@@ -1,5 +1,7 @@
 name: polygraphs
 channels:
+  - pytorch
+  - dglteam
   - defaults
 dependencies:
   - python=3.11
@@ -7,15 +9,15 @@ dependencies:
   - tqdm=4.64.1
   - fsspec
   - ipywidgets
-  - pytorch::pytorch
+  - pytorch=2.1.0
   - h5py
   - fsspec
   - matplotlib
-  - conda-forge::seaborn
+  - seaborn
   - pylint
   - flake8
   - pyyaml
   - pandas
-  - pip
-  - pip:
-      - dgl
+  - dgl
+  - pydantic
+  - torchdata
