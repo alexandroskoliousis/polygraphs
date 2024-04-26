@@ -36,13 +36,3 @@ class Beliefs:
 
         # Return the populated DataFrame containing beliefs data for each iteration
         return iterations_df
-
-    def get_majority(self, iterations):
-        # Calculate the average beliefs for each iteration
-        average_by_iteration = iterations.groupby(level="iteration").mean()
-        # Filter iterations where average belief is above 0.5 (majority belief)
-        iterations_above_threshold = average_by_iteration[
-            average_by_iteration["beliefs"] > 0.5
-        ]
-        # Return the index of the first iteration above the threshold
-        return iterations_above_threshold.index.tolist()[0]
