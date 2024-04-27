@@ -16,25 +16,26 @@ class AddAttributes:
         ]
         self.dataframe["density"] = density_list
 
-    def add_config(self, key_path):
+    def add_config(self, *key_paths):
         # Add values from a specified key_path in JSON config files to the dataframe
-        values = []
-        for config_path in self.dataframe["config_json_path"]:
-            with open(config_path, "r") as file:
-                json_str = file.read()
-            json_obj = json.loads(json_str)
-            keys = key_path.split(".")
-            value = None
-            current_obj = json_obj
-            for key in keys:
-                if key in current_obj:
-                    current_obj = current_obj[key]
-                    value = current_obj
-                else:
+        for key_path in key_paths:
+            values = []
+            for config_path in self.dataframe["config_json_path"]:
+                with open(config_path, "r") as file:
+                    json_str = file.read()
+                    json_obj = json.loads(json_str)
+                    keys = key_path.split(".")
                     value = None
-                    break
-            values.append(value)
-        column_name = key_path.replace(".", "_").replace(" ", "")  # Format column name
-        self.dataframe[column_name] = (
-            values  # Add values as a new column in the dataframe
-        )
+                    current_obj = json_obj
+                for key in keys:
+                    if key in current_obj:
+                        current_obj = current_obj[key]
+                        value = current_obj
+                    else:
+                        value = None
+                        break
+                values.append(value)
+            # Format column name
+            column_name = key_path.replace(".", "_").replace(" ", "")
+            # Add values as a new column in the dataframe
+            self.dataframe[column_name] = values
