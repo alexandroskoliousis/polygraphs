@@ -1,7 +1,13 @@
+import os
+
 from .graph_converter import Graphs
 from .belief_processor import Beliefs
 from .add_attributes import AddAttributes
 from .simulation_processor import SimulationProcessor
+
+
+# Cache data directory for all results
+_RESULTCACHE = os.getenv("POLYGRAPHS_CACHE") or "~/polygraphs-cache/results"
 
 
 class Processor(SimulationProcessor, AddAttributes):
@@ -23,7 +29,9 @@ class Processor(SimulationProcessor, AddAttributes):
     in the root folder path.
     """
 
-    def __init__(self, root_folder_path, graph_converter=None, belief_processor=None):
+    def __init__(
+        self, root_folder_path=_RESULTCACHE, graph_converter=None, belief_processor=None
+    ):
         # Initialize with default Graphs and Beliefs instances if not provided
         if graph_converter is None:
             graph_converter = Graphs()
