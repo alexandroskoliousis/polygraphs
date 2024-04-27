@@ -45,7 +45,7 @@ class SimulationProcessor:
 
         # Initialize a list to store paths of subfolders representing individual simulations
         # Include the root folder as one of the folder to search for simulations
-        folders = [path]
+        folders = [self.path]
         try:
             # Walk through the directory tree starting from the specified path
             for dirpath, dirnames, filenames in os.walk(self.path):
@@ -63,9 +63,11 @@ class SimulationProcessor:
         # Process each subfolder and concatenate the results into the result DataFrame
         for folder in folders:
             subfolder_df = self.process_subfolder(folder)
-            result_df = pd.concat(
-                [result_df, subfolder_df.dropna(axis=1, how="all")], ignore_index=True
-            )
+            # Add folder if we get a dataframe with simulations
+            if isinstance(subfolder_df, pd.DataFrame):
+                result_df = pd.concat(
+                    [result_df, subfolder_df.dropna(axis=1, how="all")], ignore_index=True
+                )
 
         # Store the aggregated DataFrame in the class attribute `self.dataframe`
         self.dataframe = result_df
@@ -105,7 +107,7 @@ class SimulationProcessor:
 
         # Stop processing subfolder if there were no simulations that ran
         if len(hd5_files) == 0:
-            return pd.DataFrame()
+            return
 
         # Check if there is a configuration JSON file in the subfolder
         config_file = [f for f in files if f == "configuration.json"]
