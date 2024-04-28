@@ -131,14 +131,16 @@ beliefs = processor.get_beliefs(0)
 beliefs.groupby("iteration").mean().plot()
 ```
 
-Seaborn makes it easy to create a chart for individual node beliefs:
+![pandas line chart of average beliefs](pandas_beliefs.svg)
+
+A Seaborn lineplot can be used to create a chart of individual node beliefs:
 
 ```python
 import seaborn as sns
 sns.lineplot(x="iteration", y="beliefs", hue="node", palette="husl", data=beliefs)
 ```
 
-![Line chart containing beliefs of nodes](belief_plot.svg)
+![Line chart containing beliefs of individual nodes](belief_plot.svg)
 
 ## Adding Configuration Parameters
 Parameters from the configuration file `configuration.json` inside a simulation can be added as a column using the `add_config()` method. You can provide multiple parameters at once.

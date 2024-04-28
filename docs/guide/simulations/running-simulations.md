@@ -69,7 +69,7 @@ op: "BalaGoyalOp"
 
 This asks PolyGraphs to create a complete network with 16 nodes using `network.kind` and `network.size`. The $\epsilon$ or `epsilon`, or the chances of B being better than A is set at 0.01. Our nodes start with a random set of beliefs that are drawn from a uniform distribution using `init.kind` which is initially created with a random `seed` of 123456789.
 
-The configuration asks PolyGraphs to print out the beliefs to the screen every 100 steps using `logging.interval` and save a snapshot of all node beliefs every 100 steps using `snapshots.interval`. PolyGraphs will use the BalaGoyalOp `op` and run five diffrent simulations `simulation.repeats` for a maximum of 1000 steps in each simulation `simulation.steps`, unless the network converges earlier on a belief.
+The configuration asks PolyGraphs to print out the beliefs to the screen every 100 steps using `logging.interval` and save a snapshot of all node beliefs every 100 steps using `snapshots.interval`. PolyGraphs will use the BalaGoyalOp `op` and run five different simulations `simulation.repeats` for a maximum of 1000 steps in each simulation `simulation.steps`, unless the network converges earlier on a belief.
 
 ## Results
 PolyGraphs stores the results from simulations inside the `polygraphs-cache` directory which it creates by default inside your home directory. The cache directory has the following structure: `~/polygraphs-cache/results/<date>/<unique id>/`.
