@@ -94,8 +94,8 @@ function sidebarGuide() {
           link: "/guide/simulations/running-simulations",
         },
         {
-          text: "Batch Jobs",
-          link: "/guide/simulations/batch-jobs",
+          text: "Processing Results",
+          link: "/guide/simulations/processing-results"
         },
       ],
     },
@@ -103,7 +103,6 @@ function sidebarGuide() {
       text: "Analysis",
       collapsed: false,
       items: [
-        { text: "Processing Results", link: "/guide/analysis/processing-results" },
         { text: "Steps", link: "/guide/analysis/steps" },
         { text: "Proportions", link: "/guide/analysis/proportions" },
         { text: "Individual Nodes", link: "/guide/analysis/individual-nodes" },
