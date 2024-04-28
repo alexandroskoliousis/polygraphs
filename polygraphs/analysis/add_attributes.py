@@ -18,15 +18,23 @@ class AddAttributes:
 
     def add_config(self, *key_paths):
         # Add values from a specified key_path in JSON config files to the dataframe
+        configs = {}
         for key_path in key_paths:
             values = []
             for config_path in self.dataframe["config_json_path"]:
-                with open(config_path, "r") as file:
-                    json_str = file.read()
-                    json_obj = json.loads(json_str)
-                    keys = key_path.split(".")
-                    value = None
-                    current_obj = json_obj
+                # Check if we have already read config file
+                if config_path in configs:
+                    current_obj = configs[config_path]
+                else:
+                    with open(config_path, "r") as file:
+                        json_str = file.read()
+                        json_obj = json.loads(json_str)
+                        configs[config_path] = json_obj
+                        current_obj = json_obj
+
+                # Get data for key paths
+                keys = key_path.split(".")
+                value = None
                 for key in keys:
                     if key in current_obj:
                         current_obj = current_obj[key]
