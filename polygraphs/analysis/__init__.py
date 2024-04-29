@@ -41,6 +41,9 @@ class Processor(SimulationProcessor, AddAttributes):
         super().__init__(graph_converter, belief_processor)
         # Process simulations in the specified root folder path
         self.process_simulations(root_folder_path)
+        # Remeber all_beliefs and all_graphs
+        self.all_beliefs = []
+        self.all_graphs = []
 
     def add(self, *methods):
         """
@@ -85,6 +88,11 @@ class Processor(SimulationProcessor, AddAttributes):
                 hd5_file_path, bin_file_path, self.graph_converter
             )
         else:
+            # Check if we already have beliefs for all simulations
+            if len(self.all_beliefs) == len(self.dataframe):
+                return self.all_beliefs
+
+            # Loop through each bin file in dataframe and extract beliefs
             _ = []
             for hd5_file_path, bin_file_path in zip(
                 self.dataframe["hd5_file_path"], self.dataframe["bin_file_path"]
@@ -93,7 +101,9 @@ class Processor(SimulationProcessor, AddAttributes):
                     hd5_file_path, bin_file_path, self.graph_converter
                 )
                 _.append(iterations)
-            return _
+
+            self.all_beliefs = _
+            return self.all_beliefs
 
     def get_graphs(self, row=None):
         """
@@ -109,7 +119,14 @@ class Processor(SimulationProcessor, AddAttributes):
             bin_file_path = self.dataframe.iloc[row]["bin_file_path"]
             return self.graph_converter.get_networkx_object(bin_file_path)
         else:
-            return [
+            # Check if we already have graphs for all simulations
+            if len(self.all_graphs) == len(self.dataframe):
+                return self.all_graphs
+
+            # Get graph from each simulation
+            self.all_graphs = [
                 self.graph_converter.get_networkx_object(bin_file_path)
                 for bin_file_path in self.dataframe["bin_file_path"]
             ]
+
+            return self.all_graphs
