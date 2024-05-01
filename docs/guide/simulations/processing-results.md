@@ -190,8 +190,8 @@ class MyPolygraphProcessor(Processor):
             if 0 <= threshold and threshold <= 1:
                 # Call get_majority function on each simulation beliefs
                 majority_list = []
-                for beliefs in self.beliefs:
-                    majority_list.append(get_majority(beliefs, threshold))
+                for belief in self.beliefs:
+                    majority_list.append(get_majority(belief, threshold))
                 # Add a column to dataframe
                 column = "majority_" + str(threshold).replace(".", "_")
                 self.dataframe[column] = majority_list
