@@ -51,7 +51,6 @@ class Processor(SimulationProcessor):
         This method takes a variable number of methods and applies a decorator
         to each method, allowing it to be called to add custom columns to the DataFrame.
         """
-
         def column(func):
             def wrapper(*args, **kwargs):
                 func(*args, **kwargs)
