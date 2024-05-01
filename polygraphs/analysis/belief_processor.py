@@ -2,7 +2,7 @@ import pandas as pd  # Importing pandas library for data manipulation
 import h5py  # Importing h5py library for working with HDF5 files
 
 
-class Beliefs:
+class BeliefProcessor:
     def get_beliefs(self, hd5_file_path, bin_file_path, graph_converter):
         # Retrieve graph object from bin file using the provided graph_converter
         graph = graph_converter.get_graph_object(bin_file_path)
@@ -36,3 +36,57 @@ class Beliefs:
 
         # Return the populated DataFrame containing beliefs data for each iteration
         return iterations_df
+
+
+class Beliefs:
+    """
+    The Beliefs class stores the beliefs of simulations that have been
+    explicitly loaded for analysis using the Belief Processor
+
+    This class provides an iterator and get item to access beliefs
+    """
+    def __init__(self, dataframe, belief_processor, graph_converter):
+        self.bin_file_path = dataframe["bin_file_path"]
+        self.hd5_file_path = dataframe["hd5_file_path"]
+        self.belief_processor = belief_processor
+        self.graph_converter = graph_converter
+        self.beliefs = [None] * len(dataframe)
+        self.index = 0
+
+
+    def __getitem__(self, index):
+        if index > len(self.beliefs):
+            raise IndexError("Simulation index out of range")
+        return self.get(index)
+
+
+    def __len__(self):
+        return len(self.beliefs)
+
+
+    def __iter__(self):
+        return self
+
+
+    def __next__(self):
+        if self.index >= len(self.beliefs):
+            self.index = 0
+            raise StopIteration
+        value = self.get(self.index)
+        self.index += 1
+        return value
+
+
+    def get(self, index):
+        # Return a saved beliefs dataframe using its index or load from file
+        if self.beliefs[index] is not None:
+            return self.beliefs[index]
+        elif index < len(self.beliefs):
+            self.beliefs[index] = self.belief_processor.get_beliefs(
+                self.hd5_file_path[index],
+                self.bin_file_path[index],
+                self.graph_converter,
+            )
+            return self.beliefs[index]
+        else:
+            raise IndexError("Simulation index out of range")

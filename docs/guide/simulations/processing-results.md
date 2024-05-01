@@ -43,21 +43,22 @@ The DataFrame will contain the following columns:
 
 
 ## Getting Graphs
-The NetworkX graph for a particular simulation can be accessed using the `get_graphs()` method and the index of the row of a specific simulation from the DataFrame:
+The NetworkX graph for a particular simulation can be accessed using the `graphs` object and the index of the row of a specific simulation from the DataFrame:
 ```python
-processor.get_graphs(0)
+processor.graphs[0]
 ```
 
-You can get a Python list containing all of the graphs by calling the method without an argument:
+The `graphs` objects can also be accessed as an iterator for list comprehensions and loops:
 
 ```python
-processor.get_graphs()
+for g in processor.graphs:
+    print(g)
 ```
 
 ## Getting Beliefs
-The beliefs for each node at every iteration of the simulation can be accessed using the `get_beliefs()` method. You can specify and index to a specific simulation row from the DataFrame or get a Python list containing a DataFrames of beliefs for all simulations.
+The beliefs for each node at every iteration of the simulation can be accessed using the `beliefs` object. You can specify and index to a specific simulation row from the DataFrame or iterate it to access all beliefs.
 ```python
-processor.get_beliefs(0)
+processor.beliefs[0]
 ```
 Belief data is returned as a pandas MultiIndex DataFrame:
 <table>
@@ -127,8 +128,7 @@ Belief data is returned as a pandas MultiIndex DataFrame:
 Average beliefs for a simulation can be quickly plotted from pandas using a `groupby`:
 
 ```python
-beliefs = processor.get_beliefs(0)
-beliefs.groupby("iteration").mean().plot()
+processor.beliefs[0].groupby("iteration").mean().plot()
 ```
 
 ![pandas line chart of average beliefs](pandas_beliefs.svg)
@@ -137,7 +137,14 @@ A Seaborn lineplot can be used to create a chart of individual node beliefs:
 
 ```python
 import seaborn as sns
-sns.lineplot(x="iteration", y="beliefs", hue="node", palette="husl", data=beliefs)
+
+sns.lineplot(
+    x="iteration",
+    y="beliefs",
+    hue="node",
+    palette="husl",
+    data=processor.beliefs[0]
+)
 ```
 
 ![Line chart containing beliefs of individual nodes](belief_plot.svg)
@@ -164,7 +171,7 @@ class MyPolygraphProcessor(Processor):
 
     def edges(self):
         """Use NetworkX to count number of edges in graph for all sims"""
-        edges_list = [nx.number_of_edges(graph) for graph in self.get_graphs()]
+        edges_list = [nx.number_of_edges(graph) for graph in self.graphs]
         self.dataframe["edges"] = edges_list
         
     def majority(self, *thresholds):
@@ -176,9 +183,6 @@ class MyPolygraphProcessor(Processor):
             iterations_above_threshold = mean_iteration[mean_iteration['beliefs'] > threshold]
             # Return the first remaining iteration (the index)
             return iterations_above_threshold.index[0]
-
-        # Get beliefs for all sims
-        all_beliefs = self.get_beliefs()
         
         # Loop through list of arguments
         for threshold in thresholds:
@@ -186,14 +190,14 @@ class MyPolygraphProcessor(Processor):
             if 0 <= threshold and threshold <= 1:
                 # Call get_majority function on each simulation beliefs
                 majority_list = []
-                for beliefs in all_beliefs:
+                for beliefs in self.beliefs:
                     majority_list.append(get_majority(beliefs, threshold))
                 # Add a column to dataframe
                 column = "majority_" + str(threshold).replace(".", "_")
                 self.dataframe[column] = majority_list
 ```
 
-The first `__init__()` is used to initialise the `Processor` class. The `edges()` method accesses all of the graphs in the simulations using the `self.get_graphs()` method and uses the `number_of_edges()` method from NetworkX. This list is then added as a column to `self.dataframe`.
+The first `__init__()` is used to initialise the `Processor` class. The `edges()` method accesses all of the graphs in the simulations using the `self.get_graphs()` method and uses the `number_of_edges()` method from NetworkX. This list is then added as a column to `self.dataframe` which contains the data that is returned when calling `processor.get()`.
 
 The second more complex method called `majority()` accepts multiple arguments and uses a custom `get_majority()` function to calculate when a given average belief threshold was met.
 

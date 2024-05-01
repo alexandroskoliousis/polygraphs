@@ -5,12 +5,12 @@ import json  # Importing json module for working with JSON data
 
 
 class SimulationProcessor:
-    def __init__(self, graph_converter, belief_processor):
+    def __init__(self):
         # Initialize SimulationProcessor with required objects and variables
         self.path = ""  # Path to the root folder of simulation data
-        self.dataframe = None  # DataFrame to store processed simulation data
-        self.graph_converter = graph_converter  # Object to convert graphs
-        self.belief_processor = belief_processor  # Object to process beliefs
+        self.dataframe = pd.DataFrame()  # DataFrame to store processed simulation data
+        self.configs = {} # Dictionary to save config files
+
 
     def extract_params(self, config_json_path):
         # Extract relevant parameters from a configuration JSON file
@@ -23,6 +23,7 @@ class SimulationProcessor:
             config_data.get("op"),
             config_data.get("epsilon"),
         )
+
 
     def process_simulations(self, path):
         """
@@ -71,6 +72,7 @@ class SimulationProcessor:
 
         # Store the aggregated DataFrame in the class attribute `self.dataframe`
         self.dataframe = result_df
+
 
     def process_subfolder(self, subfolder_path):
         """
@@ -161,3 +163,38 @@ class SimulationProcessor:
 
         # Return the processed DataFrame
         return df
+
+
+    def add_config(self, *key_paths):
+        """
+        Add values from a specified key_paths in JSON config files to the dataframe
+        """
+        # Loop through each key path
+        for key_path in key_paths:
+            values = []
+            for config_path in self.dataframe["config_json_path"]:
+                # Check if we have already read config file
+                if config_path in self.configs:
+                    current_obj = self.configs[config_path]
+                else:
+                    with open(config_path, "r") as file:
+                        json_str = file.read()
+                        json_obj = json.loads(json_str)
+                        self.configs[config_path] = json_obj
+                        current_obj = json_obj
+
+                # Get data for key paths
+                keys = key_path.split(".")
+                value = None
+                for key in keys:
+                    if key in current_obj:
+                        current_obj = current_obj[key]
+                        value = current_obj
+                    else:
+                        value = None
+                        break
+                values.append(value)
+            # Format column name
+            column_name = key_path.replace(".", "_").replace(" ", "")
+            # Add values as a new column in the dataframe
+            self.dataframe[column_name] = values
