@@ -23,23 +23,23 @@ processor.get()
 
 The DataFrame will contain the following columns:
 
-| Column             | Description                                              |
-|--------------------|----------------------------------------------------------|
-| `bin_file_path`    | Path to binary file containing graph and initial beliefs |
-| `hd5_file_path`    | Path to HDF5 file containing iterations                  |
-| `config_json_path` | Path to configuration JSON file                          |
-| `trials`           | Number of trials                                         |
-| `network_size`     | Network size                                             |
-| `network_kind`     | Network kind                                             |
-| `op`               | PolyGraphs Op                                            |
-| `epsilon`          | Epsilon value                                            |
-| `uid`              | Unique identifier of simulation directory                |
-| `steps`            | Number of steps                                          |
-| `duration`         | Duration of simulation in seconds                        |
-| `action`           | Action A or B                                            |
-| `undefined`        |                                                          |
-| `converged`        | Covered (True/False)                                     |
-| `polarized`        | Polarized (True/False)                                   |
+| Column             | Description                                                       |
+|--------------------|-------------------------------------------------------------------|
+| `bin_file_path`    | Path to binary file containing graph and initial beliefs          |
+| `hd5_file_path`    | Path to HDF5 file containing iterations                           |
+| `config_json_path` | Path to configuration JSON file                                   |
+| `trials`           | Number of trials                                                  |
+| `network_size`     | Network size                                                      |
+| `network_kind`     | Network kind                                                      |
+| `op`               | PolyGraphs Op                                                     |
+| `epsilon`          | Epsilon value                                                     |
+| `uid`              | Unique identifier of simulation directory                         |
+| `steps`            | Number of steps                                                   |
+| `duration`         | Duration of simulation in seconds                                 |
+| `action`           | Action A or B                                                     |
+| `undefined`        | `True` if graph beliefs contain undefined values (`nan` or `inf`) |
+| `converged`        | Covered (True/False)                                              |
+| `polarized`        | Polarized (True/False)                                            |
 
 
 ## Getting Graphs
