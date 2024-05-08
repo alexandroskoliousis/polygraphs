@@ -9,8 +9,7 @@ class SimulationProcessor:
         # Initialize SimulationProcessor with required objects and variables
         self.path = ""  # Path to the root folder of simulation data
         self.dataframe = pd.DataFrame()  # DataFrame to store processed simulation data
-        self.configs = {} # Dictionary to save config files
-
+        self.configs = {}  # Dictionary to save config files
 
     def extract_params(self, config_json_path):
         # Extract relevant parameters from a configuration JSON file
@@ -23,7 +22,6 @@ class SimulationProcessor:
             config_data.get("op"),
             config_data.get("epsilon"),
         )
-
 
     def process_simulations(self, path):
         """
@@ -67,12 +65,12 @@ class SimulationProcessor:
             # Add folder if we get a dataframe with simulations
             if isinstance(subfolder_df, pd.DataFrame):
                 result_df = pd.concat(
-                    [result_df, subfolder_df.dropna(axis=1, how="all")], ignore_index=True
+                    [result_df, subfolder_df.dropna(axis=1, how="all")],
+                    ignore_index=True,
                 )
 
         # Store the aggregated DataFrame in the class attribute `self.dataframe`
         self.dataframe = result_df
-
 
     def process_subfolder(self, subfolder_path):
         """
@@ -93,23 +91,20 @@ class SimulationProcessor:
         files = os.listdir(subfolder_path)
 
         # Filter HDF5 files and sort them based on their numerical order
-        hd5_files = sorted(
-            [f for f in files if f.endswith(".hd5")],
-            key=lambda x: int(re.search(r"(\d+)\.hd5", x).group(1)),
-        )
-
-        # Get bin files for simulations that ran and output a HDF5 file
-        bin_files = []
-        for f in hd5_files:
-            _bin_file = f.replace("hd5", "bin")
-            if _bin_file in files:
-                bin_files.append(_bin_file)
-            else:
-                hd5_files.remove(f)
+        _hd5_files = sorted([f for f in files if f.endswith(".hd5")])
 
         # Stop processing subfolder if there were no simulations that ran
-        if len(hd5_files) == 0:
+        if len(_hd5_files) == 0:
             return
+
+        # Get bin files for simulations that ran and output a HDF5 file
+        hd5_files = []
+        bin_files = []
+        for sim in _hd5_files:
+            _bin_file = sim.replace("hd5", "bin")
+            if _bin_file in files:
+                hd5_files.append(sim)
+                bin_files.append(_bin_file)
 
         # Check if there is a configuration JSON file in the subfolder
         config_file = [f for f in files if f == "configuration.json"]
@@ -145,12 +140,14 @@ class SimulationProcessor:
             csv_path = os.path.join(subfolder_path, csv_file[0])
             csv_df = pd.read_csv(csv_path)
             # Determine the number of files to match with the CSV data
-            num_files = min(len(bin_files), len(hd5_files))
+            num_files = len(hd5_files)
+
+            # Raise error if the number of rows in CSV doesn't match the number of binary and HDF5 files
             if len(csv_df) != num_files:
-                # Print a warning if the number of rows in CSV doesn't match the number of binary and HDF5 files
-                print(
-                    "Warning: Number of rows in data.csv does not match the number of bin and hd5 files."
+                raise ValueError(
+                    f"Number of rows in data.csv does not match the number of bin and hd5 files in {subfolder_path}."
                 )
+
             # Concatenate the CSV data with the existing DataFrame
             df = pd.concat([df[:num_files], csv_df], axis=1)
         else:
@@ -163,7 +160,6 @@ class SimulationProcessor:
 
         # Return the processed DataFrame
         return df
-
 
     def add_config(self, *key_paths):
         """

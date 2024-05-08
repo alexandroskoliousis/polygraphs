@@ -9,7 +9,7 @@ dependencies:
   - tqdm=4.64.1
   - fsspec
   - ipywidgets
-  - pytorch=2.1.0
+  - pytorch=2.2.0
   - h5py
   - matplotlib
   - seaborn
@@ -17,6 +17,5 @@ dependencies:
   - flake8
   - pyyaml
   - pandas
-  - dgl
+  - dgl=2.1.0
   - pydantic
-  - torchdata

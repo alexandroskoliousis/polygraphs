@@ -1,5 +1,6 @@
-torch
-dgl
+torch==2.2.0
+dgl==2.1.0
+pydantic
 notebook
 matplotlib
 pylint
