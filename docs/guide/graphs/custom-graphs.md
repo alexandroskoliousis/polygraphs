@@ -1,4 +1,4 @@
-# Creating Custom Graphs
+# Custom Graphs
 
 Custom graphs from GML files can be loaded by setting `network.kind` parameter as `gml` and specifying a name in `network.gml.name`, path to GML file in `network.gml.path`. The name parameter can be used to identify the network in the results during the analysis stage.
 
