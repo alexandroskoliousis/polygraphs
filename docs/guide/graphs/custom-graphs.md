@@ -1,5 +1,7 @@
 # Custom Graphs
-Graphs defined using [Graph Modelling Language](https://networkx.org/documentation/stable/reference/readwrite/gml.html) can be imported for use with Polygraphs. Graphs from GML files can be loaded by setting `network.kind` parameter as `gml` and specifying a name in `network.gml.name` and path to GML file in `network.gml.path`. The name parameter is used to identify the network using the configuration file stored with the results during the analysis stage. PolyGraphs assumes the file contains an undirected graph by default, you can set the parameter `network.gml.directed` to `True` to specify that you have a directed graph.
+Graphs defined using [Graph Modelling Language](https://networkx.org/documentation/stable/reference/readwrite/gml.html) can be imported for use with Polygraphs. Graphs from GML files can be loaded by setting `network.kind` parameter as `gml` and specifying a name in `network.gml.name` and path to GML file in `network.gml.path`. The name parameter is used to identify the network using the configuration file stored with the results during the analysis stage.
+
+PolyGraphs assumes the file contains an undirected graph by default, you can set the parameter `network.gml.directed` to `True` to specify that you have a directed graph.
 
 :::tip
 Polygraphs loads the graph from the GML file using the edge list
