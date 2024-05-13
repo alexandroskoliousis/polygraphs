@@ -1,12 +1,11 @@
 # Custom Graphs
-
-Custom graphs from GML files can be loaded by setting `network.kind` parameter as `gml` and specifying a name in `network.gml.name`, path to GML file in `network.gml.path`. The name parameter can be used to identify the network in the results during the analysis stage.
+Graphs defined using [Graph Modelling Language](https://networkx.org/documentation/stable/reference/readwrite/gml.html) can be imported for use with Polygraphs. Graphs from GML files can be loaded by setting `network.kind` parameter as `gml` and specifying a name in `network.gml.name` and path to GML file in `network.gml.path`. The name parameter is used to identify the network using the configuration file stored with the results during the analysis stage. PolyGraphs assumes the file contains an undirected graph by default, you can set the parameter `network.gml.directed` to `True` to specify that you have a directed graph.
 
 :::tip
 Polygraphs loads the graph from the GML file using the edge list
 :::
 
-Polygraphs assumes the graph is undirected by default. You can set the parameter `network.gml.directed` to `True` to specify that you have a directed graph.
+Remember that the graph used to run the simulation is stored inside the `.bin` file inside the results directory. Ensure that any analysis you do of the results are made using the graph from this file (which can be accessed using the PolyGraphs analyser) to avoid any inconsistencies with the graph.
 
 ## Example Configuration
 The following configuration file loads a GML file called `custom_graph.gml` which contains a directed graph from the user's home directory:
@@ -34,5 +33,5 @@ simulation.steps: 1000
 op: "BalaGoyalOp"
 ```
 
-## Custom GML Files
+## Creating GML Files
 The Polygraphs repository contains an example notebook which demonstrates the [process for generating a GML file](https://github.com/alexandroskoliousis/polygraphs/blob/main/scripts/sixdegreesoffrancisbacon.ipynb) from the [Six Degrees of Francis Bacon](http://sixdegreesoffrancisbacon.com) network.
