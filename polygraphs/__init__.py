@@ -58,7 +58,7 @@ def _mkdir(directory="auto", attempts=10):
         ), f"Failed to generate unique id after {attempts} attempts"
     else:
         # User-defined directory must not exist
-        assert not os.path.isdir(directory)
+        assert not os.path.isdir(directory), "Results directory already exists"
     # Create result directory, or raise an exception if it already exists
     os.makedirs(directory)
     return uid, directory
