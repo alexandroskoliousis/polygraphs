@@ -96,7 +96,70 @@ class BalaGoyalOp(core.PolyGraphOp):
 
         return function
 
+class IdealOp(core.PolyGraphOp):
+    """
+    IdealOp filters messages sent by reliable nodes.
+    """
 
+    def filterfn(self):
+        """
+        Filters out messages sent by unreliable nodes.
+        """
+
+        def function(edges):
+            # Get the reliability of source nodes
+            reliability = edges.src["reliability"]
+            # Get the payoffs from source nodes
+            payoffs = edges.src["payoffs"]
+            # Filter messages sent by reliable nodes
+            return (torch.gt(payoffs[:, 1], 0.0) * reliability).bool()
+
+        return function
+
+    def messagefn(self):
+        """
+        Message function
+        """
+
+        def function(edges):
+            return {"payoffs": edges.src["payoffs"]}
+
+        return function
+
+    def reducefn(self):
+        """
+        Reduce function
+        """
+
+        def function(nodes):
+            return {"payoffs": torch.sum(nodes.mailbox["payoffs"], dim=1)}
+
+        return function
+
+    def applyfn(self):
+        """
+        Update function
+        """
+
+        def function(nodes):
+            # A node observes evidence E denoting the number of successful trials (`values`),
+            # and the total number of trials (`trials`). The probability of successful trials
+            # is given by `logits`.
+            logits = nodes.data["logits"]
+            values = nodes.data["payoffs"][:, 0]
+            trials = nodes.data["payoffs"][:, 1]
+
+            # Prior, P(H) (aka. belief that B is better)
+            prior = nodes.data["beliefs"]
+
+            # Posterior, P(H|E)
+            posterior = math.bayes(prior, math.Evidence(logits, values, trials))
+
+            # Update node attribute
+            return {"beliefs": posterior}
+
+        return function
+    
 class OConnorWeatherallOp(core.PolyGraphOp):
     """
     Scientific polarisation (O'Connor & Weatherall, 2018)

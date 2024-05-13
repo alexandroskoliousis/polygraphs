@@ -53,7 +53,7 @@ $ source .venv/bin/activate
 ```
 Once on the allocated machine (say `vm`), run:
 ```bash
-(.venv) [vm] $ python run.py -f configs/test.yaml
+(.venv) [vm] $ python3 run.py -f configs/test.yaml
 ```
 
 ### Generating and running job array configurations

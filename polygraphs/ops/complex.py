@@ -462,3 +462,98 @@ class UnreliableNetworkBasicUnalignedUniformOp(BalaGoyalOp):
             return {"beliefs": posterior}
 
         return function
+
+
+class ModifiedUnreliableNetworkBasicAlignedUniformOp(BalaGoyalOp):
+    """
+    Unreliable networks, Part 3
+    There are two types of nodes, reliable and unreliable ones.
+    Unreliable nodes' evidence follow a uniform distribution.
+    Upon receipt, all nodes apply Jeffrey's rule.
+    """
+
+    def __init__(self, graph, params):
+        super().__init__(graph, params)
+
+        # The shape of all node attributes
+        size = (graph.num_nodes(),)
+
+        # Create uniform sampler
+        self._unreliable_sampler = torch.distributions.uniform.Uniform(
+            init.zeros(size), init.zeros(size) + (params.trials + 1)
+        )
+
+        # Configure network reliability:
+        #
+        # Draw binary numbers from a Bernoulli distribution
+        # (1s denote reliable nodes)
+        self._reliability = torch.bernoulli(torch.ones(size) * params.reliability)
+
+        # Given a list of unreliable nodes, make them unreliable
+        for node in params.unreliablenodes:
+            self._reliability[node] = 0
+
+        # Store network reliability
+        graph.ndata["reliability"] = self._reliability.to(device=self._device)
+
+        # Configure network trust on evidence
+        self._trust = torch.ones(size) * params.trust
+
+        # Store trust
+        graph.ndata["trust"] = self._trust.to(device=self._device)
+
+        # Count number of reliable nodes (for debugging purposes)
+        nr = torch.count_nonzero(self._reliability)
+        log.info(f"{nr.item()} out of {graph.num_nodes()} nodes are reliable")
+
+    def sample(self):
+        """
+        Draws a sample from binomial and uniform distribution
+        for reliable and unreliable node, respectively.
+        """
+        # pylint: disable=invalid-name
+
+        # Sample binomial distribution
+        b = self._sampler.sample()
+
+        # Sample uniform distribution
+        u = self._unreliable_sampler.sample()
+
+        # Combine samples
+        return b * self._reliability + u * (1 - self._reliability)
+
+    def messagefn(self):
+        """
+        Message function
+        """
+
+        def function(edges):
+            return {"payoffs": edges.src["payoffs"], "trust": edges.src["trust"]}
+
+        return function
+
+    def reducefn(self):
+        """
+        Reduce function
+        """
+
+        def function(nodes):
+            # Log probability of successful trials
+            logits = nodes.data["logits"]
+            # Prior, P(H) (aka. belief)
+            prior = nodes.data["beliefs"]
+
+            # Aggregate evidence from all neighbors
+            aggregated_values = torch.sum(nodes.mailbox["payoffs"][:, :, 0], dim=1)
+            aggregated_trials = torch.sum(nodes.mailbox["payoffs"][:, :, 1], dim=1)
+
+            # Evidence, E
+            evidence = math.Evidence(logits, aggregated_values, aggregated_trials)
+
+            # Compute posterior belief using Jeffrey's rule
+            posterior = math.jeffrey(prior, evidence, self._reliability)
+
+            # Return posterior beliefs for each neighbour
+            return {"beliefs": posterior}
+
+        return function
