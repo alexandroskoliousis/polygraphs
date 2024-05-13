@@ -11,8 +11,6 @@ $ pip install --upgrade pip
 $ pip install -e .
 $ python -m dgl.backend.set_default_backend . pytorch
 ```
-On macos, you may need to install some packages via homebrew, such as `hd5`, `cython` and `yaml`.
-
 For a conda environment:
 ```bash
 $ conda env create -n polygraphs --file environment.yml
@@ -64,30 +62,5 @@ Once on the allocated machine (say `vm`), run:
 (.venv) $ sbatch run-array.script
 ```
 
-## Gathering Simulation Results
-
-To gather results after simulations have run into a CSV file for analysis:
-```bash
-(.venv) $ python scripts/gather.py
-```
-This will load simulation results from the default location of `~/polygraphs-cache/results` and exports the CSV file in the same folder.
-
-### Optional Arguments
-
-- `-f`: Specify location of results folder
-- `-n`: Networks to filter (seperated by spaces)
-- `--add-polarisation`: Extract polarisation hyper-parameters
-- `--add-reliability`: Extract reliability hyper-parameters
-- `--add-statistics`: Extract network statistics (clustering, density)
-
-Examples:
-```bash
-# Add polarisation hyper-parameter column
-(.venv) $ python scripts/gather.py --add-polarisation
-
-# Extract only complete networks and add reliability parameter
-(.venv) $ python scripts/gather.py -n complete --add-reliability
-
-# Extract results from a specific folder
-(.venv) $ python scripts/gather.py -f ~/polygraphs-cache/results/2022-10-01
-```
+## Analysing Simulation Results
+See the documentation on using the [analysis module](https://github.com/alexandroskoliousis/polygraphs/blob/main/docs/guide/simulations/processing-results.md) from PolyGraphs to gather and process simulation results. 
