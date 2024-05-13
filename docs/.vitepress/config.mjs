@@ -95,7 +95,7 @@ function sidebarGuide() {
         },
         {
           text: "Processing Results",
-          link: "/guide/simulations/processing-results"
+          link: "/guide/simulations/processing-results",
         },
       ],
     },
@@ -125,7 +125,7 @@ function sidebarGuide() {
         { text: "SNAP Networks", link: "/guide/graphs/snap-networks" },
         {
           text: "Custom Graphs",
-          link: "/guide/graphs/custom-networks",
+          link: "/guide/graphs/custom-graphs",
         },
       ],
     },
