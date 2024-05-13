@@ -363,6 +363,7 @@ class NetworkHyperParameters(HyperParameters):
         # Adding support for datasets
         self.add(snap=HyperParameters(name=None))
         self.add(ogb=HyperParameters(name="collab"))
+        self.add(gml=HyperParameters(name=None, path=None, directed=False))
 
 
 class InitHyperParameters(HyperParameters):

@@ -7,6 +7,8 @@ import math
 import networkx as nx
 import dgl
 import numpy as np
+import os
+import torch
 
 from .hyperparameters import HyperParameters
 from . import datasets
@@ -371,6 +373,28 @@ def francisbacon(params):
     if params.selfloop:
         graph = _buckleup(graph)
     params.size = graph.num_nodes()
+    return graph
+
+
+def gml(params):
+    """
+    Loads a custom GML graph from a path identified by `params.gml.path`.
+    A custom name can be given for the graph using `params.gml.name`
+    Directed graphs should be specified by setting `params.gml.directed` to True
+    """
+    assert params.gml.name, "gml.name GML network name not specified"
+    assert params.gml.path, "gml.path GML file not specified"
+    # Resolve GML file
+    gml_file = os.path.abspath(os.path.expanduser(params.gml.path))
+    assert os.path.isfile(gml_file), "GML file not found"
+    # Load graph from GML file
+    G = nx.read_gml(gml_file, destringizer=int)
+    # Load graph using edge list so that we preserve node ids
+    edges = [torch.tensor((edge[0], edge[1])) for edge in list(nx.to_edgelist(G))]
+    graph = dgl.graph(edges)
+    # Convert to a bi-directed DGL graph for undirected graphs
+    if not params.gml.directed:
+        graph = dgl.to_bidirected(graph)
     return graph
 
 
