@@ -200,27 +200,23 @@ class SimulationProcessor:
 
     def add_config(self, *key_paths):
         """
-        Add values from specified key_paths in JSON config files to the dataframe.
-
-        Parameters:
-        - key_paths (tuple): A variable length argument list of key paths to extract values from config JSON files.
+        Add values from a specified key_paths in JSON config files to the dataframe
         """
         # Loop through each key path
         for key_path in key_paths:
             values = []
             for config_path in self.dataframe["config_json_path"]:
-                # Check if we have already read the config file
+                # Check if we have already read config file
                 if config_path in self.configs:
                     current_obj = self.configs[config_path]
                 else:
-                    # Read and load the JSON config file
                     with open(config_path, "r") as file:
                         json_str = file.read()
                         json_obj = json.loads(json_str)
                         self.configs[config_path] = json_obj
                         current_obj = json_obj
 
-                # Navigate through the key path to get the value
+                # Get data for key paths
                 keys = key_path.split(".")
                 value = None
                 for key in keys:
