@@ -27,8 +27,14 @@ class Processor(SimulationProcessor):
     instances of Graphs and Beliefs classes. It then processes the simulations
     in the root folder path.
     """
+
     def __init__(
-        self, root_folder_path=_RESULTCACHE, graph_converter=None, belief_processor=None
+        self,
+        root_folder_path=_RESULTCACHE,
+        include=None,
+        exclude=None,
+        graph_converter=None,
+        belief_processor=None,
     ):
         # Initialize with default Graphs and Beliefs instances if not provided
         if graph_converter is None:
@@ -36,13 +42,12 @@ class Processor(SimulationProcessor):
         if belief_processor is None:
             belief_processor = BeliefProcessor()
         # Call the constructor of parent classes with specified instances
-        super().__init__()
+        super().__init__(include, exclude)
         # Process simulations in the specified root folder path
         self.process_simulations(root_folder_path)
         # Objects to store beliefs and graphs
         self.beliefs = Beliefs(self.dataframe, belief_processor, graph_converter)
         self.graphs = Graphs(self.dataframe, graph_converter)
-
 
     def add(self, *methods):
         """
@@ -51,6 +56,7 @@ class Processor(SimulationProcessor):
         This method takes a variable number of methods and applies a decorator
         to each method, allowing it to be called to add custom columns to the DataFrame.
         """
+
         def column(func):
             def wrapper(*args, **kwargs):
                 func(*args, **kwargs)
@@ -59,7 +65,6 @@ class Processor(SimulationProcessor):
 
         for method in methods:
             column(method)
-
 
     def get(self):
         """
