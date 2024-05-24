@@ -5,7 +5,7 @@ import json  # Importing json module for working with JSON data
 
 
 class SimulationProcessor:
-        
+
     def __init__(self, include=None, exclude=None):
         """
         Initialize SimulationProcessor with optional include and exclude parameters.
@@ -31,7 +31,7 @@ class SimulationProcessor:
             config_data.get("op"),
             config_data.get("epsilon"),
         )
-        
+
     def load_config(self, config_json_path):
         with open(config_json_path, "r") as f:
             config_data = json.load(f)
@@ -39,12 +39,14 @@ class SimulationProcessor:
 
     def match_criteria(self, config_data, criteria):
         for key, value in criteria.items():
-            keys = key.split('.')
+            keys = key.split(".")
             data = config_data
+            # Get the corresponding key
             for k in keys:
                 data = data.get(k, None)
                 if data is None:
                     return False
+            # Check value against retreived key
             if data != value:
                 return False
         return True
@@ -93,7 +95,9 @@ class SimulationProcessor:
             print(f"Error accessing folder: {e}")
 
         # Initialize an empty DataFrame to store processed simulation data
-        result_df = pd.DataFrame()
+        result_df = pd.DataFrame(
+            columns=["bin_file_path", "hd5_file_path", "config_json_path"]
+        )
 
         # Process each subfolder and concatenate the results into the result DataFrame
         for folder in folders:
@@ -121,22 +125,28 @@ class SimulationProcessor:
         """
         # Get a list of files in the subfolder
         files = os.listdir(subfolder_path)
-        
+
         # Check if there is a configuration JSON file in the subfolder
         config_file = [f for f in files if f == "configuration.json"]
-        
+
         # If no configuration file is found, skip processing this subfolder
         if not config_file:
             return
 
-        # Load the configuration JSON file
-        config_json_path = os.path.join(subfolder_path, config_file[0])
-        config_data = self.load_config(config_json_path)
+        # Reslove path to config file
+        config_path = os.path.join(subfolder_path, config_file[0])
 
         # Check if the subfolder meets the inclusion/exclusion criteria
         if self.include or self.exclude:
+            # Load the configuration JSON file
+            config_data = self.load_config(config_path)
+
+            # Skip directory if it meets criteria
             if not self.should_include(config_data) or self.should_exclude(config_data):
                 return
+
+            # Store config in configs if we didnt skip directory
+            self.configs[config_path] = config_data
 
         # Filter and sort HDF5 files based on their numerical order
         _hd5_files = sorted([f for f in files if f.endswith(".hd5")])
@@ -149,14 +159,11 @@ class SimulationProcessor:
         hd5_files = []
         bin_files = []
         for sim in _hd5_files:
+            # Find corresponding .bin files for each .hd5 file
             _bin_file = sim.replace("hd5", "bin")
             if _bin_file in files:
                 hd5_files.append(sim)
                 bin_files.append(_bin_file)
-
-
-        # Check if there is a CSV file in the subfolder
-        csv_file = [f for f in files if f.endswith(".csv")]
 
         # Initialize an empty DataFrame to store processed data
         df = pd.DataFrame()
@@ -166,16 +173,20 @@ class SimulationProcessor:
         df["hd5_file_path"] = [os.path.join(subfolder_path, f) for f in hd5_files]
 
         # Add configuration JSON file path to the DataFrame
-        df["config_json_path"] = config_json_path
+        df["config_json_path"] = config_path
         # Extract parameters from the configuration JSON file
-        trials, network_size, network_kind, op, epsilon = self.extract_params(config_json_path)
+        trials, network_size, network_kind, op, epsilon = self.extract_params(
+            config_path
+        )
         df["trials"] = trials
         df["network_size"] = network_size
         df["network_kind"] = network_kind
         df["op"] = op
         df["epsilon"] = epsilon
 
-        # Process the CSV file if it exists
+        # Check if there is a data.csv file in the subfolder
+        csv_file = [f for f in files if f == "data.csv"]
+
         if csv_file:
             csv_path = os.path.join(subfolder_path, csv_file[0])
             csv_df = pd.read_csv(csv_path)
@@ -184,14 +195,16 @@ class SimulationProcessor:
             # Raise an error if the number of rows in CSV doesn't match the number of binary and HDF5 files
             if len(csv_df) != num_files:
                 raise ValueError(
-                    f"Number of rows in data.csv does not match the number of bin and hd5 files in {subfolder_path}."
+                    f"Number of rows in data.csv does not match the number of bin and hd5 files in: {subfolder_path}"
                 )
 
             # Concatenate the CSV data with the existing DataFrame
             df = pd.concat([df[:num_files], csv_df], axis=1)
         else:
             # If CSV file doesn't exist, set the corresponding columns to None
-            df[["steps", "duration", "action", "undefined", "converged", "polarized"]] = None
+            df[
+                ["steps", "duration", "action", "undefined", "converged", "polarized"]
+            ] = None
             # Extract unique identifier (UID) from the subfolder path
             df["uid"] = subfolder_path.split("/")[-1]
 
@@ -210,11 +223,9 @@ class SimulationProcessor:
                 if config_path in self.configs:
                     current_obj = self.configs[config_path]
                 else:
-                    with open(config_path, "r") as file:
-                        json_str = file.read()
-                        json_obj = json.loads(json_str)
-                        self.configs[config_path] = json_obj
-                        current_obj = json_obj
+                    json_obj = self.load_config(config_path)
+                    self.configs[config_path] = json_obj
+                    current_obj = json_obj
 
                 # Get data for key paths
                 keys = key_path.split(".")
