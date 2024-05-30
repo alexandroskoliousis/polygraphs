@@ -49,6 +49,35 @@ class SimulationProcessor:
             return self.match_criteria(config_data, self.exclude)
         return False
 
+    def load_config(self, config_json_path):
+        with open(config_json_path, "r") as f:
+            config_data = json.load(f)
+        return config_data
+
+    def match_criteria(self, config_data, criteria):
+        for key, value in criteria.items():
+            keys = key.split(".")
+            data = config_data
+            # Get the corresponding key
+            for k in keys:
+                data = data.get(k, None)
+                if data is None:
+                    return False
+            # Check value against retreived key
+            if data != value:
+                return False
+        return True
+
+    def should_include(self, config_data):
+        if self.include:
+            return self.match_criteria(config_data, self.include)
+        return True
+
+    def should_exclude(self, config_data):
+        if self.exclude:
+            return self.match_criteria(config_data, self.exclude)
+        return False
+
     def process_simulations(self, path):
         """
         Process simulation data from the specified path.

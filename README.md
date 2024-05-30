@@ -15,7 +15,7 @@ For a conda environment:
 ```bash
 $ conda env create -n polygraphs --file environment.yml
 $ conda activate polygraphs
-$ python setup.py install
+$ python install -e .
 $ python -m dgl.backend.set_default_backend . pytorch
 ```
 
@@ -24,7 +24,7 @@ $ python -m dgl.backend.set_default_backend . pytorch
 ```bash
 !git clone https://[token]@github.com/alexandroskoliousis/polygraphs.git
 %cd polygraphs
-!python setup.py install
+!pip install -e .
 !nvidia-smi
 !pip install dgl-cu110
 ```

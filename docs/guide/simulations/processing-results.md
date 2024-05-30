@@ -149,6 +149,12 @@ sns.lineplot(
 
 ![Line chart containing beliefs of individual nodes](belief_plot.svg)
 
+Alternatively, you can convert the MultiIndex beliefs DataFrame to a wide format using the `pivot_table` method from pandas:
+
+```python
+processor.beliefs[0].pivot_table(values="beliefs", index="iteration", columns="node")
+```
+
 ## Adding Configuration Parameters
 Parameters from the configuration file `configuration.json` inside a simulation can be added as a column using the `add_config()` method. You can provide multiple parameters at once.
 ```python
