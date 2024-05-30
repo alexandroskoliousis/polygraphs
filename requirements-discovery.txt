@@ -1,0 +1,12 @@
+torch==2.1.0
+dgl==1.1.3
+urllib3==1.26.18
+pydantic
+notebook
+matplotlib
+pylint
+flake8
+PyYaml
+pandas
+h5py
+fsspec

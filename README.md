@@ -46,7 +46,7 @@ $ echo "export PYTHONPATH=$PWD:$PYTHONPATH" >> ~/.bashrc
 $ python3 -m venv .venv
 $ source .venv/bin/activate
 (.venv) $ pip install --upgrade pip
-(.venv) $ pip install -r requirements.txt
+(.venv) $ pip install -r requirements-discovery.txt
 (.venv) $ python -m dgl.backend.set_default_backend pytorch
 (.venv) $ python run.py --help
 (.venv) $ srun --partition=short --nodes=1 --ntasks=1 --cpus-per-task=8 --mem=64GB --export=ALL --pty /bin/bash
