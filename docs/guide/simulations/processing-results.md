@@ -162,7 +162,7 @@ processor.add_config("wattsstrogatz.probability", "wattsstrogatz.knn")
 ```
 
 ## Creating Custom Columns
-Custom columns can be defined by extending the `Processor` class to access the `dataframe` object inside the class and adding columns using the `add()` method. In the example below, a `MyPolygraphProcessor` class is created and two methods for calculating the number of edges and a majority function that determines which iteration a particular threshold was met is added as columns to the results DataFrame.
+Custom columns can be defined by extending the `Processor` class to access the `dataframe` object inside the class and adding columns using the `add()` method during initialisation. In the example below, a `MyPolygraphProcessor` class is created and two methods for calculating the number of edges and a majority function that determines which iteration a particular threshold was met is added as columns to the results DataFrame.
 
 ```python
 import numpy as np
@@ -174,6 +174,8 @@ from polygraphs.analysis import Processor
 class MyPolygraphProcessor(Processor):
     def __init__(self, path):
         super().__init__(path)
+        # Add the columns when processor is initialised
+        self.add(self.edges(), self.majority(0.5, 0.75))
 
     def edges(self):
         """Use NetworkX to count number of edges in graph for all sims"""
@@ -187,8 +189,13 @@ class MyPolygraphProcessor(Processor):
             mean_iteration = iterations.groupby("iteration").mean()
             # Filter out the iterations that do not meet threshold
             iterations_above_threshold = mean_iteration[mean_iteration['beliefs'] > threshold]
-            # Return the first remaining iteration (the index)
-            return iterations_above_threshold.index[0]
+            # Check that the we found a threshold
+            if len(iterations_above_threshold) > 0:
+                # Return the first remaining iteration (the index)
+                return iterations_above_threshold.index[0]
+            else:
+                return None
+
         
         # Loop through list of arguments
         for threshold in thresholds:
@@ -207,11 +214,10 @@ The first `__init__()` is used to initialise the `Processor` class. The `edges()
 
 The second more complex method called `majority()` accepts multiple arguments and uses a custom `get_majority()` function to calculate when a given average belief threshold was met.
 
-Once we have defined a custom class, we can initialise the new results processor and use the `add()` method to add new columns using the methods from our extended class with any optional arguments to the results DataFrame:
+We initialise the new results processor and use the `add()` method to add new columns using the methods from our extended class with any optional arguments to the results DataFrame. We can use the processor as follows:
 
 ```python
-x = MyPolygraphProcessor()
-x.add(x.edges(), x.majority(0.5, 0.75))
+x = MyPolygraphProcessor("~/polygraphs-cache/results/")
 x.get()
 ```
 
