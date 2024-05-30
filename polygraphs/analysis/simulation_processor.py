@@ -20,17 +20,34 @@ class SimulationProcessor:
         self.include = include if include else {}
         self.exclude = exclude if exclude else {}
 
-    def extract_params(self, config_json_path):
-        # Extract relevant parameters from a configuration JSON file
+    def load_config(self, config_json_path):
         with open(config_json_path, "r") as f:
             config_data = json.load(f)
-        return (
-            config_data.get("trials"),
-            config_data.get("network", {}).get("size"),
-            config_data.get("network", {}).get("kind"),
-            config_data.get("op"),
-            config_data.get("epsilon"),
-        )
+        return config_data
+
+    def match_criteria(self, config_data, criteria):
+        for key, value in criteria.items():
+            keys = key.split(".")
+            data = config_data
+            # Get the corresponding key
+            for k in keys:
+                data = data.get(k, None)
+                if data is None:
+                    return False
+            # Check value against retreived key
+            if data != value:
+                return False
+        return True
+
+    def should_include(self, config_data):
+        if self.include:
+            return self.match_criteria(config_data, self.include)
+        return True
+
+    def should_exclude(self, config_data):
+        if self.exclude:
+            return self.match_criteria(config_data, self.exclude)
+        return False
 
     def load_config(self, config_json_path):
         with open(config_json_path, "r") as f:
@@ -136,17 +153,21 @@ class SimulationProcessor:
         # Reslove path to config file
         config_path = os.path.join(subfolder_path, config_file[0])
 
+        # Load the configuration JSON file
+        config_data = self.load_config(config_path)
+
+        # Check that the configuration file matches the directory name
+        directory = config_data.get("simulation", {}).get("results", "")
+        last_dir = directory.split("/")[-1]
+        if last_dir != subfolder_path.split("/")[-1]:
+            print(f"Incorrect configuration.json: {subfolder_path}")
+            return
+
         # Check if the subfolder meets the inclusion/exclusion criteria
         if self.include or self.exclude:
-            # Load the configuration JSON file
-            config_data = self.load_config(config_path)
-
             # Skip directory if it meets criteria
             if not self.should_include(config_data) or self.should_exclude(config_data):
                 return
-
-            # Store config in configs if we didnt skip directory
-            self.configs[config_path] = config_data
 
         # Filter and sort HDF5 files based on their numerical order
         _hd5_files = sorted([f for f in files if f.endswith(".hd5")])
@@ -171,18 +192,15 @@ class SimulationProcessor:
         df["bin_file_path"] = [os.path.join(subfolder_path, f) for f in bin_files]
         # Add paths to HDF5 files to the DataFrame
         df["hd5_file_path"] = [os.path.join(subfolder_path, f) for f in hd5_files]
-
         # Add configuration JSON file path to the DataFrame
         df["config_json_path"] = config_path
+
         # Extract parameters from the configuration JSON file
-        trials, network_size, network_kind, op, epsilon = self.extract_params(
-            config_path
-        )
-        df["trials"] = trials
-        df["network_size"] = network_size
-        df["network_kind"] = network_kind
-        df["op"] = op
-        df["epsilon"] = epsilon
+        df["trials"] = config_data.get("trials")
+        df["network_size"] = config_data.get("network", {}).get("size")
+        df["network_kind"] = config_data.get("network", {}).get("kind")
+        df["op"] = config_data.get("op")
+        df["epsilon"] = config_data.get("epsilon")
 
         # Check if there is a data.csv file in the subfolder
         csv_file = [f for f in files if f == "data.csv"]
@@ -192,11 +210,12 @@ class SimulationProcessor:
             csv_df = pd.read_csv(csv_path)
             num_files = len(hd5_files)
 
-            # Raise an error if the number of rows in CSV doesn't match the number of binary and HDF5 files
+            # Skip folder if rows in CSV doesn't match the number of binary and HDF5 files
             if len(csv_df) != num_files:
-                raise ValueError(
-                    f"Number of rows in data.csv does not match the number of bin and hd5 files in: {subfolder_path}"
+                print(
+                    f"Number of rows in data.csv did not match bin and hd5 files: {subfolder_path}"
                 )
+                return
 
             # Concatenate the CSV data with the existing DataFrame
             df = pd.concat([df[:num_files], csv_df], axis=1)
@@ -207,6 +226,9 @@ class SimulationProcessor:
             ] = None
             # Extract unique identifier (UID) from the subfolder path
             df["uid"] = subfolder_path.split("/")[-1]
+
+        # Store config in self.configs if we didnt skip directory
+        self.configs[config_path] = config_data
 
         # Return the processed DataFrame
         return df
