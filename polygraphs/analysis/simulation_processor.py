@@ -1,6 +1,5 @@
 import os  # Importing os module for interacting with the operating system
 import pandas as pd  # Importing pandas library for data manipulation
-import re  # Importing re module for regular expressions
 import json  # Importing json module for working with JSON data
 
 
@@ -127,10 +126,13 @@ class SimulationProcessor:
         # Load the configuration JSON file
         config_data = self.load_config(config_path)
 
-        # Check that the configuration file matches the directory name
-        directory = config_data.get("simulation", {}).get("results", "")
-        last_dir = directory.split("/")[-1]
-        if last_dir != subfolder_path.split("/")[-1]:
+        # Find base directory (UUID) of simulation directory in configuration file
+        config_directory = config_data.get("simulation", {}).get("results", "")
+        directory_path = os.path.normpath(config_directory)
+        config_base_dir = os.path.basename(directory_path)
+
+        # Check that the configuration file directory matches the directory name
+        if config_base_dir != os.path.basename(subfolder_path):
             print(f"Incorrect configuration.json: {subfolder_path}")
             return
 
@@ -196,7 +198,7 @@ class SimulationProcessor:
                 ["steps", "duration", "action", "undefined", "converged", "polarized"]
             ] = None
             # Extract unique identifier (UID) from the subfolder path
-            df["uid"] = subfolder_path.split("/")[-1]
+            df["uid"] = os.path.basename(subfolder_path)
 
         # Store config in self.configs if we didnt skip directory
         self.configs[config_path] = config_data
