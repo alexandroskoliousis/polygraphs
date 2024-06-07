@@ -8,14 +8,14 @@
 $ python3 -m venv .venv
 $ source .venv/bin/activate
 $ pip install --upgrade pip
-$ pip install -e .
+$ python setup.py install
 $ python -m dgl.backend.set_default_backend . pytorch
 ```
 For a conda environment:
 ```bash
 $ conda env create -n polygraphs --file environment.yml
 $ conda activate polygraphs
-$ python install -e .
+$ python setup.py install
 $ python -m dgl.backend.set_default_backend . pytorch
 ```
 
