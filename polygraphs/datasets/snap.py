@@ -1,6 +1,7 @@
 """
 PolyGraph SNAP datasets
 """
+
 from collections import deque, defaultdict
 import gzip
 from urllib.parse import urljoin
@@ -46,10 +47,9 @@ class SNAPDataset(PolyGraphDataset):
                 # Ignore comments
                 if line.startswith("#"):
                     continue
-                # Each line has two numbers,
-                # the source and destination
-                # node id
-                u, v = list(map(int, line.split()))  # pylint: disable=invalid-name
+                # Each line has two numbers, the source (u) and destination node
+                # id (v), we catch timestamps for temporal graphs with t
+                u, v, *t = list(map(int, line.split()))  # pylint: disable=invalid-name
                 src.append(u)
                 dst.append(v)
 
@@ -175,6 +175,7 @@ class EmailEUCore(SNAPDataset):
 
         - The network is directed.
     """
+
     def __init__(self):
         super().__init__(
             folder="email-eu-core",
@@ -196,6 +197,7 @@ class EmailEUAll(SNAPDataset):
 
         - The network is directed.
     """
+
     def __init__(self):
         super().__init__(
             folder="email-eu-all",
@@ -217,6 +219,7 @@ class CollegeMsg(SNAPDataset):
 
         - The network is directed.
     """
+
     def __init__(self):
         super().__init__(
             folder="college-msg",
