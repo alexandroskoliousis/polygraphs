@@ -15,13 +15,17 @@ from .common import (
 )
 
 from .complex import (
+    UnreliableNetworkIdealOp,
     UnreliableNetworkBasicGullibleUniformOp,
     UnreliableNetworkBasicGullibleBinomialOp,
     UnreliableNetworkBasicGullibleNegativeEpsOp,
     UnreliableNetworkBasicAlignedUniformOp,
     UnreliableNetworkBasicAlignedBinomialOp,
     UnreliableNetworkBasicAlignedNegativeEpsOp,
-    UnreliableNetworkBasicUnalignedUniformOp
+    UnreliableNetworkBasicUnalignedUniformOp,
+    UnreliableNetworkModifiedAlignedUniformOp,
+    UnreliableNetworkModifiedAlignedBinomialOp,
+    UnreliableNetworkModifiedAlignedNegativeEpsOp
 )
 
 
@@ -34,6 +38,7 @@ __all__ = [
     "OConnorWeatherallOp",
     "OConnorWeatherallSquareRootDistanceOp",
     "OConnorWeatherallSquareDistanceOp",
+    "UnreliableNetworkIdealOp",
     "UnreliableNetworkBasicGullibleUniformOp",
     "UnreliableNetworkBasicGullibleBinomialOp",
     "UnreliableNetworkBasicGullibleNegativeEpsOp",
@@ -41,8 +46,11 @@ __all__ = [
     "UnreliableNetworkBasicAlignedBinomialOp",
     "UnreliableNetworkBasicAlignedNegativeEpsOp",
     "UnreliableNetworkBasicUnalignedUniformOp",
+    "UnreliableNetworkModifiedAlignedUniformOp",
+    "UnreliableNetworkModifiedAlignedBinomialOp",
+    "UnreliableNetworkModifiedAlignedNegativeEpsOp",
     "BalaGoyalWeightedOp",
-    "BalaGoyalWeighted2Op"
+    "BalaGoyalWeighted2Op",
 ]
 
 

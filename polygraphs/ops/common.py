@@ -96,7 +96,7 @@ class BalaGoyalOp(core.PolyGraphOp):
 
         return function
 
-
+    
 class OConnorWeatherallOp(core.PolyGraphOp):
     """
     Scientific polarisation (O'Connor & Weatherall, 2018)

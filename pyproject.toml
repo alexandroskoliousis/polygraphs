@@ -22,7 +22,7 @@ dependencies = [
     "matplotlib",
     "networkx",
     "six",
-    "pytorch",
+    "torch",
     "dgl"
 ]
 

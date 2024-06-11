@@ -57,6 +57,34 @@ class UnreliableOp(BalaGoyalOp):
         return b * self._reliability + u * (1 - self._reliability)
 
 
+class UnreliableNetworkIdealOp(UnreliableOp):
+    """
+    IdealOp messages only sent by reliable nodes.
+    """
+
+    def __init__(self, graph, params):
+        super().__init__(graph, params)
+
+    def sample(self):
+        # Draw a single sample from the reliable sampler
+        return self._sampler.sample()
+
+    def filterfn(self):
+        """
+        Filter out messages sent by unreliable nodes.
+        """
+
+        def function(edges):
+            # Get the reliability of source nodes
+            reliability = edges.src["reliability"]
+            # Get the payoffs from source nodes
+            payoffs = edges.src["payoffs"]
+            # Filter messages sent by reliable nodes
+            return (torch.gt(payoffs[:, 1], 0.0) * reliability).bool()
+
+        return function
+
+
 class UnreliableNetworkBasicGullibleUniformOp(UnreliableOp):
     """
     Unreliable nodes draw from a uniform distribution
@@ -327,4 +355,99 @@ class UnreliableNetworkBasicUnalignedUniformOp(UnalignedOp):
         # Create uniform sampler
         self._unreliable_sampler = torch.distributions.uniform.Uniform(
             init.zeros(self._size), init.zeros(self._size) + (params.trials + 1)
+        )
+
+
+# ------------------------------------------------------------------------------
+# Modified Aligned Ops
+
+
+class ModifiedAlignedOp(AlignedOp):
+    """
+    Jeffrey's rule without the for loop
+    """
+
+    def __init__(self, graph, params):
+        super().__init__(graph, params)
+
+    def reducefn(self):
+        """
+        Reduce function
+        """
+
+        def function(nodes):
+            # Log probability of successful trials
+            logits = nodes.data["logits"]
+            # Prior, P(H) (aka. belief)
+            prior = nodes.data["beliefs"]
+
+            # Aggregate evidence from all neighbors
+            aggregated_values = torch.sum(nodes.mailbox["payoffs"][:, :, 0], dim=1)
+            aggregated_trials = torch.sum(nodes.mailbox["payoffs"][:, :, 1], dim=1)
+
+            # Evidence, E
+            evidence = math.Evidence(logits, aggregated_values, aggregated_trials)
+
+            # Compute posterior belief using Jeffrey's rule
+            posterior = math.jeffrey(prior, evidence, self._reliability)
+
+            # Return posterior beliefs for each neighbour
+            return {"beliefs": posterior}
+
+        return function
+
+
+class UnreliableNetworkModifiedAlignedUniformOp(ModifiedAlignedOp):
+    """
+    Unreliable nodes' evidence follow a uniform distribution.
+    """
+
+    def __init__(self, graph, params):
+        super().__init__(graph, params)
+        # Create uniform sampler
+        self._unreliable_sampler = torch.distributions.uniform.Uniform(
+            init.zeros(self._size), init.zeros(self._size) + (params.trials + 1)
+        )
+
+
+class UnreliableNetworkModifiedAlignedBinomialOp(ModifiedAlignedOp):
+    """
+    Unreliable nodes' evidence follow a binomial distribution
+    with epsilon of 0/p = 0.5.
+    """
+
+    def __init__(self, graph, params):
+        super().__init__(graph, params)
+        # Unreliable Binomial Sampler:
+        # Payoff: p = 0.5, epsilon = 0
+        probs = init.halfs(self._size)
+
+        # Number of Bernoulli trials
+        count = init.zeros(self._size) + params.trials
+
+        # Each node gets a private signal that provides information
+        # about whether action B is indeed a good action
+        self._unreliable_sampler = torch.distributions.binomial.Binomial(
+            total_count=count, probs=probs
+        )
+
+
+class UnreliableNetworkModifiedAlignedNegativeEpsOp(ModifiedAlignedOp):
+    """
+    Unreliable nodes' evidence follow a binomial distribution
+    with a negative epsilon.
+    """
+
+    def __init__(self, graph, params):
+        super().__init__(graph, params)
+        # Unreliable Binomial Sampler with a negative epsilon
+        probs = init.halfs(self._size) - params.epsilon
+
+        # Number of Bernoulli trials
+        count = init.zeros(self._size) + params.trials
+
+        # Each node gets a private signal that provides information
+        # about whether action B is indeed a good action
+        self._unreliable_sampler = torch.distributions.binomial.Binomial(
+            total_count=count, probs=probs
         )
