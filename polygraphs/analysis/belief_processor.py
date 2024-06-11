@@ -20,6 +20,7 @@ class BeliefProcessor:
             for key in _keys:
                 # Retrieve beliefs data for the current iteration
                 beliefs = fp["beliefs"][str(key)]
+
                 # Append the iteration number and beliefs data to the list
                 iterations.append((key, list(beliefs)))
 
@@ -27,8 +28,9 @@ class BeliefProcessor:
         index = pd.MultiIndex.from_product(
             [[0, *_keys], list(G.nodes())], names=["iteration", "node"]
         )
+
         # Create an empty DataFrame with the defined MultiIndex
-        iterations_df = pd.DataFrame(index=index, columns=["beliefs"])
+        iterations_df = pd.DataFrame(index=index, columns=["beliefs"], dtype="Float32")
 
         # Populate the DataFrame with beliefs data for each iteration
         for key, beliefs in iterations:
@@ -45,6 +47,7 @@ class Beliefs:
 
     This class provides an iterator and get item to access beliefs
     """
+
     def __init__(self, dataframe, belief_processor, graph_converter):
         self.bin_file_path = dataframe["bin_file_path"]
         self.hd5_file_path = dataframe["hd5_file_path"]
@@ -53,20 +56,16 @@ class Beliefs:
         self.beliefs = [None] * len(dataframe)
         self.index = 0
 
-
     def __getitem__(self, index):
         if index > len(self.beliefs):
             raise IndexError("Simulation index out of range")
         return self.get(index)
 
-
     def __len__(self):
         return len(self.beliefs)
 
-
     def __iter__(self):
         return self
-
 
     def __next__(self):
         if self.index >= len(self.beliefs):
@@ -75,7 +74,6 @@ class Beliefs:
         value = self.get(self.index)
         self.index += 1
         return value
-
 
     def get(self, index):
         # Return a saved beliefs dataframe using its index or load from file

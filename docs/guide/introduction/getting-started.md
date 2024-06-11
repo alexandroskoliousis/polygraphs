@@ -42,7 +42,7 @@ conda activate polygraphs
 Next, install PolyGraphs itself as a package in the environment so that we can import it from other Python scripts and notebooks:
 
 ```bash
-python setup.py install
+pip install -e .
 ```
 
 Finally, let's tell [DGL](https://www.dgl.ai/), the graph library used by PolyGraphs to use [PyTorch](https://pytorch.org/) as its backend:
