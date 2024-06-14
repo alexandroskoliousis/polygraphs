@@ -2,47 +2,7 @@
 outline: deep
 ---
 # Running Simulations
-Open a terminal in the `polygraphs` directory you cloned and ensure that the `polygraphs` environment is active by running:
-
-```bash
-conda activate polygraphs
-```
-
-:::tip
-You will need to activate the `polygraphs` conda environment every time you start a new terminal session to use PolyGraphs. 
-:::
-
-Once the environment has been activated we can run a simulation using a test configuration available in the repository by running:
-
-```bash
-python run.py -f configs/test.yaml
-```
-
-This will output some logs from the simulations telling us how many steps each simulation took and the ratio of beliefs between `A` and `B` believers in the network. The example below shows five simulations that took between 49 and 107 steps to complete:
-
-```
-[MON] step 0001 Ksteps/s   0.00 A/B 0.56/0.44
-[MON] step 0049 Ksteps/s   0.77 A/B 0.00/1.00
- INFO polygraphs> Sim #0001:     49 steps    0.07s; action: B undefined: 0 converged: 1 polarized: 0 
-[MON] step 0001 Ksteps/s   0.00 A/B 0.56/0.44
-[MON] step 0073 Ksteps/s   0.76 A/B 0.00/1.00
- INFO polygraphs> Sim #0002:     73 steps    0.10s; action: B undefined: 0 converged: 1 polarized: 0 
-[MON] step 0001 Ksteps/s   0.00 A/B 0.56/0.44
-[MON] step 0100 Ksteps/s   0.78 A/B 0.00/1.00
-[MON] step 0107 Ksteps/s   0.78 A/B 0.00/1.00
- INFO polygraphs> Sim #0003:    107 steps    0.14s; action: B undefined: 0 converged: 1 polarized: 0 
-[MON] step 0001 Ksteps/s   0.00 A/B 0.44/0.56
-[MON] step 0064 Ksteps/s   0.79 A/B 0.00/1.00
- INFO polygraphs> Sim #0004:     64 steps    0.08s; action: B undefined: 0 converged: 1 polarized: 0 
-[MON] step 0001 Ksteps/s   0.00 A/B 0.62/0.38
-[MON] step 0093 Ksteps/s   0.81 A/B 0.00/1.00
- INFO polygraphs> Sim #0005:     93 steps    0.11s; action: B undefined: 0 converged: 1 polarized: 0 
-Bye.
-
-```
-
-## Configuration File
-Configuration files are used specify the parameters of a simulation we want to run using PolyGraphs. The `test.yaml` file we used to configure the simulation above specifies the following:
+You can run simulations using a configuration file with the `polygraphs` command. PolyGraphs requires a YAML file which specifies the parameters of a simulation. Create a file called `test.yaml` and paste in the following:
 
 ```yaml
 # Initial beliefs are random uniform between 0 and 1
@@ -67,9 +27,38 @@ seed: 123456789
 op: "BalaGoyalOp"
 ```
 
-This asks PolyGraphs to create a complete network with 16 nodes using `network.kind` and `network.size`. The $\epsilon$ or `epsilon`, or the chances of B being better than A is set at 0.01. Our nodes start with a random set of beliefs that are drawn from a uniform distribution using `init.kind` which is initially created with a random `seed` of 123456789.
+Navigate to the location of the `test.yaml` file in your terminal and run the `polygraphs` command:
 
-The configuration asks PolyGraphs to print out the beliefs to the screen every 100 steps using `logging.interval` and save a snapshot of all node beliefs every 100 steps using `snapshots.interval`. PolyGraphs will use the BalaGoyalOp `op` and run five different simulations `simulation.repeats` for a maximum of 1000 steps in each simulation `simulation.steps`, unless the network converges earlier on a belief.
+``` bash
+polygraphs -f test.yaml
+```
+
+This will output some logs from the simulations telling us how many steps each simulation took and the ratio of beliefs between `A` and `B` believers in the network. The example below shows five simulations that took between 49 and 107 steps to complete:
+
+```
+[MON] step 0001 Ksteps/s   0.00 A/B 0.56/0.44
+[MON] step 0049 Ksteps/s   0.77 A/B 0.00/1.00
+ INFO polygraphs> Sim #0001:     49 steps    0.07s; action: B undefined: 0 converged: 1 polarized: 0 
+[MON] step 0001 Ksteps/s   0.00 A/B 0.56/0.44
+[MON] step 0073 Ksteps/s   0.76 A/B 0.00/1.00
+ INFO polygraphs> Sim #0002:     73 steps    0.10s; action: B undefined: 0 converged: 1 polarized: 0 
+[MON] step 0001 Ksteps/s   0.00 A/B 0.56/0.44
+[MON] step 0100 Ksteps/s   0.78 A/B 0.00/1.00
+[MON] step 0107 Ksteps/s   0.78 A/B 0.00/1.00
+ INFO polygraphs> Sim #0003:    107 steps    0.14s; action: B undefined: 0 converged: 1 polarized: 0 
+[MON] step 0001 Ksteps/s   0.00 A/B 0.44/0.56
+[MON] step 0064 Ksteps/s   0.79 A/B 0.00/1.00
+ INFO polygraphs> Sim #0004:     64 steps    0.08s; action: B undefined: 0 converged: 1 polarized: 0 
+[MON] step 0001 Ksteps/s   0.00 A/B 0.62/0.38
+[MON] step 0093 Ksteps/s   0.81 A/B 0.00/1.00
+ INFO polygraphs> Sim #0005:     93 steps    0.11s; action: B undefined: 0 converged: 1 polarized: 0 
+Bye.
+```
+
+## Configuration File
+The `test.yaml` asked PolyGraphs to create a complete network with 16 nodes using `network.kind` and `network.size`. The $\epsilon$ or `epsilon`, or the chances of B being better than A is set at 0.01. Our nodes start with a random set of beliefs that are drawn from a uniform distribution using `init.kind` which is initially created with a random `seed` of 123456789.
+
+The configuration asks PolyGraphs to print out the beliefs to the screen every 100 steps using `logging.interval` and save a snapshot of all node beliefs every 100 steps using `snapshots.interval`. PolyGraphs will use the `BalaGoyalOp` operation and run five different simulations `simulation.repeats` for a maximum of 1000 steps in each simulation `simulation.steps`, unless the network converges earlier on a belief.
 
 ## Results
 PolyGraphs stores the results from simulations inside the `polygraphs-cache` directory which it creates by default inside your home directory. The cache directory has the following structure: `~/polygraphs-cache/results/<date>/<unique id>/`.

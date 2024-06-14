@@ -1,66 +1,33 @@
 # PolyGraphs
+<p align="center">
+  <img src="https://akoliousis.com/polygraphs/eu_email_core.webp" alt="Visualisation of EU Email Core network" height="250">
+</p>
 
-## Summary
+[Website](https://polygraphs.sites.northeastern.edu/) | [Documentation](https://akoliousis.com/polygraphs/) | [PyPi](https://pypi.org/project/polygraphs/)
 
-## Quick Start: Desktop
+PolyGraphs is a scaleable framework for performing simulations on networks built using PyTorch and DGL that can run on CPUs and GPUs.
 
-```bash
-$ python3 -m venv .venv
-$ source .venv/bin/activate
-$ pip install --upgrade pip
-$ python setup.py install
-$ python -m dgl.backend.set_default_backend . pytorch
-```
-For a conda environment:
-```bash
-$ conda env create -n polygraphs --file environment.yml
-$ conda activate polygraphs
-$ python setup.py install
-$ python -m dgl.backend.set_default_backend . pytorch
-```
-
-## Quick Start: Google Colaboratory
+## Getting Started
+PolyGraphs requires and appropriately configured version of PyTorch and DGL before installation, see the [getting started guide](https://akoliousis.com/polygraphs/guide/introduction/getting-started) for more details. You can install the PolyGraphs library via PyPi:
 
 ```bash
-!git clone https://[token]@github.com/alexandroskoliousis/polygraphs.git
-%cd polygraphs
-!pip install -e .
-!nvidia-smi
-!pip install dgl-cu110
+pip install polygraphs
 ```
 
-## Quick Start: Discovery Cluster
+You can run simulations using a configuration file with the `polygraphs` command:
 
-```bash
-$ ssh username@login.discovery.neu.edu
-[username@login-00 ~] $
-```
-For succinctness, I ommit the prefix `[username@login-00 ~]` in the following commands:
-```bash
-$ module load python
-$ python -V
-Python 3.8.1
-$ git clone git@github.com:<account name>/polygraphs.git
-$ cd polygraphs
-$ echo "export PYTHONPATH=$PWD:$PYTHONPATH" >> ~/.bashrc
-$ python3 -m venv .venv
-$ source .venv/bin/activate
-(.venv) $ pip install --upgrade pip
-(.venv) $ pip install -r requirements-discovery.txt
-(.venv) $ python -m dgl.backend.set_default_backend pytorch
-(.venv) $ python run.py --help
-(.venv) $ srun --partition=short --nodes=1 --ntasks=1 --cpus-per-task=8 --mem=64GB --export=ALL --pty /bin/bash
-```
-Once on the allocated machine (say `vm`), run:
-```bash
-(.venv) [vm] $ python run.py -f configs/test.yaml
+``` bash
+polygraphs -f test.yaml
 ```
 
-### Generating and running job array configurations
-```bash
-(.venv) $ python scripts/job-array-generator.py -f configs/zollman-effect/zollman-effect.yaml -e configs/explorables.json -a test
-(.venv) $ sbatch run-array.script
-```
+### Installing from Source
+Advanced users can [install from source](https://akoliousis.com/polygraphs/guide/introduction/install-from-source), see the documentation for more details on running PolyGraphs on the [platform guide](https://akoliousis.com/polygraphs/guide/introduction/platform-guide).
 
 ## Analysing Simulation Results
-See the documentation on using the [analysis module](https://github.com/alexandroskoliousis/polygraphs/blob/main/docs/guide/simulations/processing-results.md) from PolyGraphs to gather and process simulation results. 
+Results from simulations can be processed using the [analysis module](https://akoliousis.com/polygraphs/guide/simulations/processing-results). 
+
+## Papers About PolyGraphs
+Ball, B., Koliousis, A., Mohanan, A. et al. [Computational philosophy: reflections on the PolyGraphs project](https://doi.org/10.1057/s41599-024-02619-z). Humanit Soc Sci Commun 11, 186 (2024).
+
+## Contributing
+Please file an [issue](https://github.com/alexandroskoliousis/polygraphs/issues) if you encounter a bug or have any suggestions. Bug-fixes, contributions, new features and extensions are welcomed through discussion in issues.

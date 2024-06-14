@@ -1,55 +1,39 @@
 # Getting Started
-PolyGraphs requires a Python environment with a number of other packages it depends on to run and analyse simulations. The steps on this page only need to be followed once on your computer, where we will use the terminal to prepare and install PolyGraphs as a package.
+PolyGraphs requires PyTorch and DGL libraries to be configured on your computer before it can be installed. 
 
-## Prerequisites
-- [Git](https://git-scm.com/downloads) for cloning the repository
-- [Miniconda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) for managing packages and the enviroment for Python
-- Terminal for running commands
-- Text Editor for editing configuration files
-
-## Clone the Repository
-Open the terminal and make a copy of the source code on your local computer by cloning our repository using git. Once the repository has been cloned, change into the newly created `polygraphs` directory to continue the rest of the installation:
+## Libraries
+Currently, the latest version of PyTorch supported by DGL is `2.3.0`, the following instructions install a CPU version of PyTorch and DGL. See the installation instruction on the [PyTorch](https://pytorch.org/get-started/previous-versions/) and [DGL](https://www.dgl.ai/pages/start.html) getting started guides if you require support for CUDA or platform specific instructions.
 
 ```bash
-git clone https://github.com/alexandroskoliousis/polygraphs.git
-cd polygraphs
+pip install torch==2.3.0 torchdata
+pip install pydantic
+pip install dgl -f https://data.dgl.ai/wheels/repo.html
 ```
 
-:::tip
-Running the above command will clone the PolyGraphs repository in your home directory, this is the file location that most terminals open when they are started. PolyGraphs will also create a `polygraphs-cache` folder in your home directory to store simulations.
-:::
-
-## Create a Conda Environment
-PolyGraphs uses conda to manage packages and the environment for Python. A conda environment is a self-contained collection of packages and their dependencies used on a project.
-
-:::tip
-There are two distributions of conda available for download from the website, Anaconda and Miniconda. Anaconda contains a large collection of data science packages and a GUI for managing environments. Miniconda has a smaller installation footprint which only contains Python and a few other packages. As this instructions in this guide manages conda from the command line, they are compatible with both distributions.
-:::
-
-We can use the `environment.yml` file in the repository to tell conda to create a new environment called `polygraphs` containing packages necessary for PolyGraphs to run:
-
+<details>
+  <summary>Conda</summary>
+  
 ```bash
-conda env create -n polygraphs --file environment.yml
+conda install pytorch==2.3.0 torchdata -c pytorch
+conda install pydantic -c conda-forge
+conda install -c dglteam dgl
 ```
 
-## Finish Setup
-Once the dependencies have been downloaded, we can finish the installation using packages in the `polygraphs` environment by activating it:
+</details>
+
+
+DGL should be configured to use PyTorch as its [backend](https://docs.dgl.ai/en/latest/install/#working-with-different-backends) after the installation has completed:
 
 ```bash
-conda activate polygraphs
+python -m dgl.backend.set_default_backend pytorch
 ```
 
-Next, install PolyGraphs itself as a package in the environment so that we can import it from other Python scripts and notebooks:
+## Install PolyGraphs
+You can install and use PolyGraphs library via PyPi:
 
 ```bash
-pip install -e .
-```
-
-Finally, let's tell [DGL](https://www.dgl.ai/), the graph library used by PolyGraphs to use [PyTorch](https://pytorch.org/) as its backend:
-
-```bash
-python -m dgl.backend.set_default_backend . pytorch
+pip install polygraphs
 ```
 
 ## Next Steps
-- Run a test simulation to check that PolyGraphs is working
+- Run a [test simulation](/guide/simulations/running-simulations) to check that PolyGraphs is working

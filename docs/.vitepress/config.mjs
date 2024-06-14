@@ -83,6 +83,14 @@ function sidebarGuide() {
           text: "Getting Started",
           link: "/guide/introduction/getting-started",
         },
+        {
+          text: "Install From Source",
+          link: "/guide/introduction/install-from-source",
+        },
+        {
+          text: "Platform Guide",
+          link: "/guide/introduction/platform-guide",
+        },
       ],
     },
     {
