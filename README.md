@@ -3,7 +3,11 @@
   <img src="https://akoliousis.com/polygraphs/eu_email_core.webp" alt="Visualisation of EU Email Core network" height="250">
 </p>
 
+<p align="center">
+
 [Website](https://polygraphs.sites.northeastern.edu/) | [Documentation](https://akoliousis.com/polygraphs/) | [PyPi](https://pypi.org/project/polygraphs/)
+
+</p>
 
 PolyGraphs is a scaleable framework for performing simulations on networks built using PyTorch and DGL that can run on CPUs and GPUs.
 
