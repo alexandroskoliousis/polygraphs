@@ -389,7 +389,7 @@ class ModifiedAlignedOp(AlignedOp):
             evidence = math.Evidence(logits, aggregated_values, aggregated_trials)
 
             # Compute posterior belief using Jeffrey's rule
-            posterior = math.jeffrey(prior, evidence, self._reliability)
+            posterior = math.jeffrey(prior, evidence, 0.75)
 
             # Return posterior beliefs for each neighbour
             return {"beliefs": posterior}
