@@ -1,23 +1,25 @@
-import os  # Importing os module for interacting with the operating system
-import pandas as pd  # Importing pandas library for data manipulation
-import json  # Importing json module for working with JSON data
+import pandas as pd
+import json
+from pathlib import Path, PosixPath
+import warnings
 
 
 class SimulationProcessor:
 
-    def __init__(self, include=None, exclude=None):
+    def __init__(self, include=None, exclude=None, config_check=True):
         """
         Initialize SimulationProcessor with optional include and exclude parameters.
 
         Parameters:
         - include (dict): Dictionary specifying key-value pairs to include directories based on config.json.
         - exclude (dict): Dictionary specifying key-value pairs to exclude directories based on config.json.
+        - ignore_config (bool): Check config folder location in simulation.results
         """
-        self.path = ""  # Path to the root folder of simulation data
         self.dataframe = pd.DataFrame()  # DataFrame to store processed simulation data
         self.configs = {}  # Dictionary to save config files
         self.include = include if include else {}
         self.exclude = exclude if exclude else {}
+        self.config_check = config_check
 
     def load_config(self, config_json_path):
         with open(config_json_path, "r") as f:
@@ -48,12 +50,19 @@ class SimulationProcessor:
             return self.match_criteria(config_data, self.exclude)
         return False
 
+    def expand_path(self, path):
+        """Expand the path to handle user home directory (~) or relative paths"""
+        if path.startswith("~"):
+            return PosixPath(path).expanduser()
+        else:
+            return Path(path).resolve()
+
     def process_simulations(self, path):
         """
         Process simulation data from the specified path.
 
         Parameters:
-        - path (str): The path to the root folder containing simulation data.
+        - path (str or list): The path to the root folder containing simulation data.
 
         Returns:
         - None
@@ -63,23 +72,21 @@ class SimulationProcessor:
         valid UUID folder names), processes each subfolder using the `process_subfolder`
         method, and aggregates the results into a single DataFrame stored in `self.dataframe`.
         """
-        if path:
-            # Expand the path to handle user home directory (~)
-            self.path = os.path.expanduser(path)
-
         # Initialize a list to store paths of subfolders representing individual simulations
         # Include the root folder as one of the folder to search for simulations
-        folders = [self.path]
-        try:
-            # Walk through the directory tree starting from the specified path
-            for dirpath, dirnames, filenames in os.walk(self.path):
-                for dirname in dirnames:
-                    # Construct the full path of each subfolder
-                    folder_path = os.path.join(dirpath, dirname)
-                    folders.append(folder_path)
-        except (FileNotFoundError, PermissionError) as e:
-            # Handle exceptions if there are issues accessing folders
-            print(f"Error accessing folder: {e}")
+        folders = []
+        if isinstance(path, list):
+            _folders = []
+            for _path in path:
+                _ = self.expand_path(_path)
+                _folders.extend((_, *[x for x in _.rglob("*/")]))
+
+            # Maks sure that folders are unique
+            _folders_set = set(str(f) for f in _folders)
+            folders = [Path(f) for f in _folders_set]
+        else:
+            _ = self.expand_path(path)
+            folders = [_, *[x for x in _.rglob("*/")]]
 
         # Initialize an empty DataFrame to store processed simulation data
         result_df = pd.DataFrame(
@@ -88,13 +95,17 @@ class SimulationProcessor:
 
         # Process each subfolder and concatenate the results into the result DataFrame
         for folder in folders:
-            subfolder_df = self.process_subfolder(folder)
-            # Add folder if we get a dataframe with simulations
-            if isinstance(subfolder_df, pd.DataFrame):
-                result_df = pd.concat(
-                    [result_df, subfolder_df.dropna(axis=1, how="all")],
-                    ignore_index=True,
-                )
+            try:
+                subfolder_df = self.process_subfolder(folder)
+                # Add folder if we get a dataframe with simulations
+                if isinstance(subfolder_df, pd.DataFrame):
+                    result_df = pd.concat(
+                        [result_df, subfolder_df.dropna(axis=1, how="all")],
+                        ignore_index=True,
+                    )
+            except (FileNotFoundError, PermissionError) as e:
+                # Handle exceptions if there are issues accessing folders
+                warnings.warn(f"Error accessing folder: {e}", RuntimeWarning)
 
         # Store the aggregated DataFrame in the class attribute `self.dataframe`
         self.dataframe = result_df
@@ -110,31 +121,30 @@ class SimulationProcessor:
         - pandas.DataFrame: DataFrame containing processed data from the subfolder, or None if the subfolder
         does not meet the inclusion/exclusion criteria or does not contain relevant files.
         """
-        # Get a list of files in the subfolder
-        files = os.listdir(subfolder_path)
 
-        # Check if there is a configuration JSON file in the subfolder
-        config_file = [f for f in files if f == "configuration.json"]
+        # Resolve path to config file using pathlib
+        config_path = subfolder_path / "configuration.json"
 
         # If no configuration file is found, skip processing this subfolder
-        if not config_file:
+        if not config_path.exists():
             return
-
-        # Reslove path to config file
-        config_path = os.path.join(subfolder_path, config_file[0])
 
         # Load the configuration JSON file
         config_data = self.load_config(config_path)
 
         # Find base directory (UUID) of simulation directory in configuration file
         config_directory = config_data.get("simulation", {}).get("results", "")
-        directory_path = os.path.normpath(config_directory)
-        config_base_dir = os.path.basename(directory_path)
+        config_base_dir = Path(config_directory).name
 
         # Check that the configuration file directory matches the directory name
-        if config_base_dir != os.path.basename(subfolder_path):
-            print(f"Incorrect configuration.json: {subfolder_path}")
-            return
+        # if the config_check parameter is true skip directory
+        if config_base_dir != subfolder_path.name:
+            warnings.warn(
+                f"Results folder does not match configuration.json: {subfolder_path}",
+                UserWarning,
+            )
+            if self.config_check == True:
+                return
 
         # Check if the subfolder meets the inclusion/exclusion criteria
         if self.include or self.exclude:
@@ -143,7 +153,7 @@ class SimulationProcessor:
                 return
 
         # Filter and sort HDF5 files based on their numerical order
-        _hd5_files = sorted([f for f in files if f.endswith(".hd5")])
+        _hd5_files = sorted(subfolder_path.glob("*.hd5"))
 
         # If no HDF5 files are found, skip processing this subfolder
         if len(_hd5_files) == 0:
@@ -154,17 +164,17 @@ class SimulationProcessor:
         bin_files = []
         for sim in _hd5_files:
             # Find corresponding .bin files for each .hd5 file
-            _bin_file = sim.replace("hd5", "bin")
-            if _bin_file in files:
-                hd5_files.append(sim)
-                bin_files.append(_bin_file)
+            _bin_file = sim.with_suffix(".bin")
+            if _bin_file.exists():
+                hd5_files.append(str(sim))
+                bin_files.append(str(_bin_file))
 
         # Initialize an empty DataFrame to store processed data
         df = pd.DataFrame()
         # Add paths to binary files to the DataFrame
-        df["bin_file_path"] = [os.path.join(subfolder_path, f) for f in bin_files]
+        df["bin_file_path"] = bin_files
         # Add paths to HDF5 files to the DataFrame
-        df["hd5_file_path"] = [os.path.join(subfolder_path, f) for f in hd5_files]
+        df["hd5_file_path"] = hd5_files
         # Add configuration JSON file path to the DataFrame
         df["config_json_path"] = config_path
 
@@ -176,17 +186,17 @@ class SimulationProcessor:
         df["epsilon"] = config_data.get("epsilon")
 
         # Check if there is a data.csv file in the subfolder
-        csv_file = [f for f in files if f == "data.csv"]
+        csv_file = subfolder_path / "data.csv"
 
-        if csv_file:
-            csv_path = os.path.join(subfolder_path, csv_file[0])
-            csv_df = pd.read_csv(csv_path)
+        if csv_file.exists():
+            csv_df = pd.read_csv(csv_file)
             num_files = len(hd5_files)
 
             # Skip folder if rows in CSV doesn't match the number of binary and HDF5 files
             if len(csv_df) != num_files:
-                print(
-                    f"Number of rows in data.csv did not match bin and hd5 files: {subfolder_path}"
+                warnings.warn(
+                    f"Number of rows in data.csv did not match bin and hd5 files: {subfolder_path}",
+                    UserWarning,
                 )
                 return
 
@@ -198,7 +208,7 @@ class SimulationProcessor:
                 ["steps", "duration", "action", "undefined", "converged", "polarized"]
             ] = None
             # Extract unique identifier (UID) from the subfolder path
-            df["uid"] = os.path.basename(subfolder_path)
+            df["uid"] = subfolder_path.name
 
         # Store config in self.configs if we didnt skip directory
         self.configs[config_path] = config_data

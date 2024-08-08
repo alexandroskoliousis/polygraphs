@@ -113,7 +113,6 @@ function sidebarGuide() {
       items: [
         { text: "Steps", link: "/guide/analysis/steps" },
         { text: "Proportions", link: "/guide/analysis/proportions" },
-        { text: "Individual Nodes", link: "/guide/analysis/individual-nodes" },
         { text: "Network Analysis", link: "/guide/analysis/network" },
       ],
     },

@@ -60,10 +60,10 @@ Once on the allocated machine (say `vm`), run:
 (.venv) $ sbatch run-array.script
 ```
 
-### Conda Environments
+### Conda Environment
 A conda environment is required to run the Processor module from PolyGraphs inside JupyterLab from OOD. The Discovery Cluster requires a Python 3.8 environment, create a new environment with this version and install the dependencies using `requirements-discovery.txt`:
 
-```python
+```bash
 $ module load anaconda3
 $ conda create -n polygraphs python=3.8
 $ conda activate polygraphs

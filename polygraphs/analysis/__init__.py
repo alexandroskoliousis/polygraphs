@@ -1,5 +1,4 @@
 import os
-
 from .graph_converter import GraphConverter, Graphs
 from .belief_processor import BeliefProcessor, Beliefs
 from .simulation_processor import SimulationProcessor
@@ -17,7 +16,10 @@ class Processor(SimulationProcessor):
     simulation data and add attributes to it.
 
     Keyword arguments:
-    - root_folder_path (str): The path to the root folder containing simulation data.
+    - root_folder_path (str or list): The path to the root folder containing simulation data.
+    - include (dict): Dictionary specifying key-value pairs to include directories based on config.json.
+    - exclude (dict): Dictionary specifying key-value pairs to exclude directories based on config.json.
+    - ignore_config (bool): Check config folder location in simulation.results
     - graph_converter (Graphs, optional): An instance of Graphs class for graph conversion.
         If not provided, a new instance will be created.
     - belief_processor (Beliefs, optional): An instance of Beliefs class for belief processing.
@@ -33,6 +35,7 @@ class Processor(SimulationProcessor):
         root_folder_path=_RESULTCACHE,
         include=None,
         exclude=None,
+        config_check=True,
         graph_converter=None,
         belief_processor=None,
     ):
@@ -42,10 +45,10 @@ class Processor(SimulationProcessor):
         if belief_processor is None:
             belief_processor = BeliefProcessor()
         # Call the constructor of parent classes with specified instances
-        super().__init__(include, exclude)
+        super().__init__(include, exclude, config_check)
         # Process simulations in the specified root folder path
         self.process_simulations(root_folder_path)
-        # Objects to store beliefs and graphs
+        # Objects to store loaded beliefs and graphs
         self.beliefs = Beliefs(self.dataframe, belief_processor, graph_converter)
         self.graphs = Graphs(self.dataframe, graph_converter)
 
@@ -66,11 +69,10 @@ class Processor(SimulationProcessor):
         for method in methods:
             column(method)
 
-    def get(self):
-        """
-        Get the processed DataFrame.
-
-        Returns:
-        - pandas.DataFrame: The DataFrame containing processed simulation data.
-        """
+    @property
+    def sims(self):
+        """Get the processed DataFrame."""
         return self.dataframe
+
+    def get(self):
+        return self.sims

@@ -15,10 +15,10 @@ By default, it will look inside the `~/polygraphs-cache/results` directory, and 
 processor = Processor("~/polygraphs-cache/results/2024-04-25")
 ```
 
-The `get()` method returns a DataFrame containing some basic information about each simulation that was found inside the directory.
+The `.sims` attribute returns a DataFrame containing some basic information about each simulation that was found inside the directory.
 
 ```python
-processor.get()
+processor.sims
 ```
 
 The DataFrame will contain the following columns:
@@ -103,23 +103,23 @@ Belief data is returned as a pandas MultiIndex DataFrame:
     </tr>
     <tr>
       <th rowspan="5" valign="top">400</th>
-      <th>11</th>
+      <th>3</th>
       <td>0.334397</td>
     </tr>
     <tr>
-      <th>12</th>
+      <th>4</th>
       <td>0.016799</td>
     </tr>
     <tr>
-      <th>13</th>
+      <th>5</th>
       <td>0.131956</td>
     </tr>
     <tr>
-      <th>14</th>
+      <th>6</th>
       <td>0.237468</td>
     </tr>
     <tr>
-      <th>15</th>
+      <th>7</th>
       <td>0.664702</td>
     </tr>
   </tbody>
@@ -128,32 +128,19 @@ Belief data is returned as a pandas MultiIndex DataFrame:
 Average beliefs for a simulation can be quickly plotted from pandas using a `groupby`:
 
 ```python
-processor.beliefs[0].groupby("iteration").mean().plot()
+processor.beliefs[0].groupby("iteration").mean().plot(title="Average Credence")
 ```
 
-![pandas line chart of average beliefs](pandas_beliefs.svg)
+![pandas line chart of average beliefs](beliefs.svg)
 
-A Seaborn lineplot can be used to create a chart of individual node beliefs:
+Alternatively, you can convert the MultiIndex beliefs DataFrame to a wide format using the `pivot_table` method from pandas and plot individual node beliefs:
 
 ```python
-import seaborn as sns
-
-sns.lineplot(
-    x="iteration",
-    y="beliefs",
-    hue="node",
-    palette="husl",
-    data=processor.beliefs[0]
-)
+processor.beliefs[0].pivot_table(values="beliefs", index="iteration", columns="node").plot(title="Node Beliefs")
 ```
 
-![Line chart containing beliefs of individual nodes](belief_plot.svg)
+![Line chart containing beliefs of individual nodes](node_beliefs.svg)
 
-Alternatively, you can convert the MultiIndex beliefs DataFrame to a wide format using the `pivot_table` method from pandas:
-
-```python
-processor.beliefs[0].pivot_table(values="beliefs", index="iteration", columns="node")
-```
 
 ## Adding Configuration Parameters
 Parameters from the configuration file `configuration.json` inside a simulation can be added as a column using the `add_config()` method. You can provide multiple parameters at once.
@@ -161,8 +148,28 @@ Parameters from the configuration file `configuration.json` inside a simulation 
 processor.add_config("wattsstrogatz.probability", "wattsstrogatz.knn")
 ```
 
+## Including and Excluding Simulation Parameters
+You can include and exclude simulation directories using the parameters in the `configuration.json` file, in this example only complete networks of size 16 are processed:
+
+```python
+processor = Processor(include={"network.kind": "complete", "network.size": "16"})
+```
+
+You can also exlude simulations by parameter, below random networks are excluded:
+
+```python
+processor = Processor(exclude={"network.kind": "random"})
+```
+
+## Disabling Configuration File Check
+To disable the processor raising errors when the directory names of simulations do match the `simulation.results` parameter of the `configuration.json` file, add a `config_check=False` parameter to the processor initialisation:
+
+```python
+processor = Processor(config_check=False)
+```
+
 ## Creating Custom Columns
-Custom columns can be defined by extending the `Processor` class to access the `dataframe` object inside the class and adding columns using the `add()` method during initialisation. In the example below, a `MyPolygraphProcessor` class is created and two methods for calculating the number of edges and a majority function that determines which iteration a particular threshold was met is added as columns to the results DataFrame.
+Custom columns can be defined by extending the `Processor` class to access the `dataframe` object inside the class and adding columns using the `add()` method during initialisation. In the example below, a `MyPolygraphProcessor` class is created and two methods for calculating the number of edges and a majority function that determines which iteration a particular threshold was met is added as columns to the results DataFrame called `self.dataframe` which is returned by `processor.sims`.
 
 ```python
 import numpy as np
@@ -218,7 +225,7 @@ We initialise the new results processor and use the `add()` method to add new co
 
 ```python
 x = MyPolygraphProcessor("~/polygraphs-cache/results/")
-x.get()
+x.sims
 ```
 
 ## Next Steps

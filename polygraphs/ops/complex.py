@@ -27,6 +27,9 @@ class UnreliableOp(BalaGoyalOp):
         # The shape of all node attributes
         self._size = (graph.num_nodes(),)
 
+        # Store the reliability parameter
+        self._network_reliability = params.reliability
+
         # Configure network reliability
         # Draw binary numbers from a Bernoulli distribution
         # (1s denote reliable nodes)
@@ -389,7 +392,7 @@ class ModifiedAlignedOp(AlignedOp):
             evidence = math.Evidence(logits, aggregated_values, aggregated_trials)
 
             # Compute posterior belief using Jeffrey's rule
-            posterior = math.jeffrey(prior, evidence, self._reliability)
+            posterior = math.jeffrey(prior, evidence, self._network_reliability)
 
             # Return posterior beliefs for each neighbour
             return {"beliefs": posterior}
