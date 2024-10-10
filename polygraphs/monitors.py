@@ -108,7 +108,7 @@ class SnapshotHook(BasicHook):
         f = h5py.File(self._filename, "a")  # pylint: disable=invalid-name
 
         # Store beliefs
-        beliefs = polygraph.ndata["beliefs"].numpy()
+        beliefs = polygraph.ndata["beliefs"].cpu().numpy()
         # Create or modify group
         grp = f.require_group("beliefs")
         # Create new dataset
@@ -116,7 +116,7 @@ class SnapshotHook(BasicHook):
         
         # Store messages
         if self._messages:
-            payoffs = polygraph.ndata["payoffs"].numpy()
+            payoffs = polygraph.ndata["payoffs"].cpu().numpy()
             # Create or modify group
             grp = f.require_group("payoffs")
             # Create new dataset
