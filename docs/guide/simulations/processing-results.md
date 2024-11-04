@@ -55,6 +55,24 @@ for g in processor.graphs:
     print(g)
 ```
 
+### Getting Edge and Node Data
+Node and edge data set by a PolyGraph Op can be accessed from the `pg` dictionary inside the NetworkX Graph:
+
+```python
+processor.graphs[0].pg
+```
+```python
+{
+  'ndata': {
+    'reliability': tensor([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]),
+    'logits': tensor([0.0040, 0.0040, 0.0040, 0.0040, 0.0040, 0.0040, 0.0040, 0.0040, 0.0040,
+        0.0040, 0.0040, 0.0040, 0.0040, 0.0040, 0.0040, 0.0040]),
+    'beliefs': tensor([0.2769, 0.4259, 0.8430, 0.0562, 0.3886, 0.5403, 0.3771, 0.8442, 0.2056,
+        0.1630, 0.3488, 0.7576, 0.8517, 0.8152, 0.4326, 0.3256]),
+  'edata': {}
+ }
+```
+
 ## Getting Beliefs
 The beliefs for each node at every iteration of the simulation can be accessed using the `beliefs` object. You can specify and index to a specific simulation row from the DataFrame or iterate it to access all beliefs.
 ```python
@@ -155,7 +173,7 @@ You can include and exclude simulation directories using the parameters in the `
 processor = Processor(include={"network.kind": "complete", "network.size": "16"})
 ```
 
-You can also exlude simulations by parameter, below random networks are excluded:
+You can also exclude simulations by parameter, below random networks are excluded:
 
 ```python
 processor = Processor(exclude={"network.kind": "random"})

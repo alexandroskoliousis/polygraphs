@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polygraphs"
-version = "0.0.21-alpha"
+version = "0.0.22-alpha"
 authors = [
     {name="Alexandros Koliousis", email="ak@akoliousis.com"},
     {name="Amil Mohanan", email="amil@mohanan.net"}

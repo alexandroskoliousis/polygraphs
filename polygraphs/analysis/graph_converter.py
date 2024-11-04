@@ -10,7 +10,7 @@ class GraphConverter:
 
     def convert_graph_networkx(self, graph):
         # Remove self-loops from the graph and convert it to a networkx Graph object
-        graph = dgl.remove_self_loop(graph[0])
+        graph = dgl.remove_self_loop(graph)
         G = nx.Graph(dgl.to_networkx(graph))
         return G
 
@@ -31,7 +31,6 @@ class Graphs:
         self.bin_file_path = dataframe["bin_file_path"]
         self.graph_converter = graph_converter
         self.graphs = [None] * len(dataframe)
-        self.data = GraphData([None] * len(dataframe), self)
         self.index = 0
 
     def __getitem__(self, index):
@@ -53,56 +52,31 @@ class Graphs:
         self.index += 1
         return value
 
+    def load(self, index):
+        # Load DGL .bin file from index
+        dgl_graph = self.graph_converter.get_graph_object(self.bin_file_path[index])
+        graph = self.graph_converter.convert_graph_networkx(dgl_graph[0])
+        # Copy edge and node data from .bin file into Graph object
+        graph.pg = {
+            'ndata': dgl_graph[0].ndata,
+            'edata': dgl_graph[0].edata
+        }
+        self.graphs[index] = graph
+
     def get(self, index):
-        # Return a saved graph using its index or load from file
+        # Return a NX graph
         if self.graphs[index] is not None:
             return self.graphs[index]
         elif index < len(self.graphs):
-            dgl_graph = self.graph_converter.get_graph_object(self.bin_file_path[index])
-            self.data._set(index, dgl_graph[0])
-            nx_graph = self.graph_converter.convert_graph_networkx(dgl_graph)
-            self.graphs[index] = nx_graph
+            self.load(index)
             return self.graphs[index]
         else:
             raise IndexError("Simulation index out of range")
 
-class GraphData:
-    def __init__(self, data, graphs):
-        self.data = data
-        self.graphs = graphs
-        self.index = 0
-
-    def __getitem__(self, index):
-        if index > len(self.data):
-            raise IndexError("Simulation index out of range")
-        return self.get(index)
-
-    def __setitem__(self, key, value):
-        raise AttributeError("Cannot set attribute for graph data")
-
-    def __len__(self):
-        return len(self.data)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.index >= len(self.data):
-            self.index = 0
-            raise StopIteration
-        value = self.get(self.index)
-        self.index += 1
-        return value
-
-    def _set(self, key, value):
-        self.data[key] = value
-
-    def get(self, index):
-        # Use the Graphs class to load data, which will place it inside this object
-        if self.data[index] is not None:
-            return self.data[index]
-        elif index < len(self.data):
-            self.graphs.get(index)
-            return self.data[index]
+    def _data(self, index):
+        # Returns DGL graph data
+        if self.graphs[index] is not None:
+            return self.graphs[index]
         else:
-            raise IndexError("Simulation index out of range")
+            self.load(index)
+            return self.graphs[index]
