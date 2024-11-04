@@ -72,11 +72,3 @@ class Graphs:
             return self.graphs[index]
         else:
             raise IndexError("Simulation index out of range")
-
-    def _data(self, index):
-        # Returns DGL graph data
-        if self.graphs[index] is not None:
-            return self.graphs[index]
-        else:
-            self.load(index)
-            return self.graphs[index]
