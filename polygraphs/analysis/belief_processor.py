@@ -14,7 +14,7 @@ class BeliefProcessor:
             # Extract the keys (iteration numbers) from the 'beliefs' group in the HDF5 file
             _keys = sorted(map(int, fp["beliefs"].keys()))
             # Initialize a list to store iteration number and corresponding beliefs
-            iterations = [(0, graph[0].ndata["beliefs"].tolist())]
+            iterations = [(0, graph.ndata["beliefs"].tolist())]
 
             # Iterate over each key (iteration number) in the HDF5 file
             for key in _keys:
