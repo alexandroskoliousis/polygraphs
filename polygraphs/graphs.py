@@ -393,9 +393,10 @@ def gml(params):
     edges = []
     for edge in list(nx.to_edgelist(G)):
         # Check that both edge ids are integers
-        if not all(isinstance(x, int) for x in edge):
+        if isinstance(edge[0], int) and isinstance(edge[1], int):
+            edges.append(torch.tensor((edge[0], edge[1])))
+        else:
             raise ValueError("GML File: Node IDs should be specified as integers")
-        edges.append(torch.tensor((edge[0], edge[1])))
     graph = dgl.graph(edges)
     # Convert to a bi-directed DGL graph for undirected graphs
     if not params.gml.directed:
