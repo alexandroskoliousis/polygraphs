@@ -10,7 +10,7 @@ class BeliefProcessor:
             _keys = sorted(map(int, fp["beliefs"].keys()))
             # Initialize a list to store iteration number and corresponding beliefs
             # with the initial beliefs from the .bin file graph
-            iterations = [(0, graph.pg['ndata']['beliefs'].tolist())]
+            iterations = [(0, graph.pg["ndata"]["beliefs"].tolist())]
 
             # Iterate over each key (iteration number) in the HDF5 file
             for key in _keys:

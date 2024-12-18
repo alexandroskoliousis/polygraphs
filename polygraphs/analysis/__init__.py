@@ -72,7 +72,13 @@ class Processor(SimulationProcessor):
     @property
     def sims(self):
         """Get the processed DataFrame."""
-        return self.dataframe
+
+        def color_threshold(val):
+            colour_codes = {"A": "rgba(145, 5, 5, .1)", "B": "rgba(8, 5, 145, .1)"}
+            color = colour_codes.get(val)
+            return f"background-color: {color};"
+
+        return self.dataframe.style.map(color_threshold, subset=["action"])
 
     def get(self):
         return self.sims

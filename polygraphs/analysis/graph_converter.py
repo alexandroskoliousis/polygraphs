@@ -13,10 +13,7 @@ class GraphConverter:
         graph = dgl.remove_self_loop(graph)
         G = nx.Graph(dgl.to_networkx(graph))
         # Copy edge and node data from .bin file into Graph object
-        G.pg = {
-            'ndata': graph.ndata,
-            'edata': graph.edata
-        }
+        G.pg = {"ndata": graph.ndata, "edata": graph.edata}
         return G
 
     def get_networkx_object(self, filepath):
