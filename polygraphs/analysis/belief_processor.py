@@ -3,18 +3,14 @@ import h5py  # Importing h5py library for working with HDF5 files
 
 
 class BeliefProcessor:
-    def get_beliefs(self, hd5_file_path, bin_file_path, graph_converter):
-        # Retrieve graph object from bin file using the provided graph_converter
-        graph = graph_converter.get_graph_object(bin_file_path)
-        # Convert the graph to a NetworkX graph
-        G = graph_converter.convert_graph_networkx(graph)
-
+    def get_beliefs(self, hd5_file_path, graph):
         # Open the HDF5 file in read mode
         with h5py.File(hd5_file_path, "r") as fp:
             # Extract the keys (iteration numbers) from the 'beliefs' group in the HDF5 file
             _keys = sorted(map(int, fp["beliefs"].keys()))
             # Initialize a list to store iteration number and corresponding beliefs
-            iterations = [(0, graph.ndata["beliefs"].tolist())]
+            # with the initial beliefs from the .bin file graph
+            iterations = [(0, graph.pg['ndata']['beliefs'].tolist())]
 
             # Iterate over each key (iteration number) in the HDF5 file
             for key in _keys:
@@ -26,7 +22,7 @@ class BeliefProcessor:
 
         # Create a MultiIndex for DataFrame indexing with iteration number and node as indices
         index = pd.MultiIndex.from_product(
-            [[0, *_keys], list(G.nodes())], names=["iteration", "node"]
+            [[0, *_keys], list(graph.nodes)], names=["iteration", "node"]
         )
 
         # Create an empty DataFrame with the defined MultiIndex
@@ -48,11 +44,10 @@ class Beliefs:
     This class provides an iterator and get item to access beliefs
     """
 
-    def __init__(self, dataframe, belief_processor, graph_converter):
-        self.bin_file_path = dataframe["bin_file_path"]
+    def __init__(self, dataframe, belief_processor, graphs):
         self.hd5_file_path = dataframe["hd5_file_path"]
         self.belief_processor = belief_processor
-        self.graph_converter = graph_converter
+        self.graphs = graphs
         self.beliefs = [None] * len(dataframe)
         self.index = 0
 
@@ -82,8 +77,7 @@ class Beliefs:
         elif index < len(self.beliefs):
             self.beliefs[index] = self.belief_processor.get_beliefs(
                 self.hd5_file_path[index],
-                self.bin_file_path[index],
-                self.graph_converter,
+                self.graphs[index],
             )
             return self.beliefs[index]
         else:

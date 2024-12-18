@@ -12,6 +12,11 @@ class GraphConverter:
         # Remove self-loops from the graph and convert it to a networkx Graph object
         graph = dgl.remove_self_loop(graph)
         G = nx.Graph(dgl.to_networkx(graph))
+        # Copy edge and node data from .bin file into Graph object
+        G.pg = {
+            'ndata': graph.ndata,
+            'edata': graph.edata
+        }
         return G
 
     def get_networkx_object(self, filepath):
@@ -53,14 +58,8 @@ class Graphs:
         return value
 
     def load(self, index):
-        # Load DGL .bin file from index
-        dgl_graph = self.graph_converter.get_graph_object(self.bin_file_path[index])
-        graph = self.graph_converter.convert_graph_networkx(dgl_graph)
-        # Copy edge and node data from .bin file into Graph object
-        graph.pg = {
-            'ndata': dgl_graph.ndata,
-            'edata': dgl_graph.edata
-        }
+        # Load graph file from index
+        graph = self.graph_converter.get_networkx_object(self.bin_file_path[index])
         self.graphs[index] = graph
 
     def get(self, index):
