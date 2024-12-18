@@ -258,11 +258,17 @@ class SimulationProcessor:
         self.dataframe = self.dataframe[new_column_order]
 
     def format_known_column_types(self):
-        """Convert know column types"""
+        """Convert known column types"""
         known_columns = {
             "trials": "int",
             "network_size": "int",
             "steps": "int",
+            "network_kind": "category",
+            "op": "category",
+            "action": "category",
+            "undefined": "bool",
+            "converged": "bool",
+            "polarized": "bool"
         }
 
         for col, _type in known_columns.items():
