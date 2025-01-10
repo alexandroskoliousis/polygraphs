@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-from pathlib import Path, PosixPath
+from pathlib import Path, PosixPath, PurePath
 import warnings
 
 
@@ -135,7 +135,7 @@ class SimulationProcessor:
 
         # Find base directory (UUID) of simulation directory in configuration file
         config_directory = config_data.get("simulation", {}).get("results", "")
-        config_base_dir = Path(config_directory).name
+        config_base_dir = PurePath(config_directory).parts[-1]
 
         # Check that the configuration file directory matches the directory name
         # if the config_check parameter is true skip directory
