@@ -49,8 +49,8 @@ class Processor(SimulationProcessor):
         # Process simulations in the specified root folder path
         self.process_simulations(root_folder_path)
         # Objects to store loaded beliefs and graphs
-        self.beliefs = Beliefs(self.dataframe, belief_processor, graph_converter)
         self.graphs = Graphs(self.dataframe, graph_converter)
+        self.beliefs = Beliefs(self.dataframe, belief_processor, self.graphs)
 
     def add(self, *methods):
         """

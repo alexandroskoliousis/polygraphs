@@ -9,6 +9,7 @@ import dgl
 import numpy as np
 import os
 import torch
+from collections import defaultdict
 
 from .hyperparameters import HyperParameters
 from . import datasets
@@ -391,16 +392,27 @@ def gml(params):
     G = nx.read_gml(gml_file, destringizer=int)
     # Load graph using edge list so that we preserve node ids
     edges = []
+
     for edge in list(nx.to_edgelist(G)):
-        # Check that both edge ids are integers
-        if isinstance(edge[0], int) and isinstance(edge[1], int):
-            edges.append(torch.tensor((edge[0], edge[1])))
-        else:
+        try:
+            edges.append((int(edge[0]), int(edge[1])))
+        except:
             raise ValueError("GML File: Node IDs should be specified as integers")
-    graph = dgl.graph(edges)
+
+    # Create normalised table
+    tbl = defaultdict(lambda: len(tbl))
+
+    # Normalise node identifiers (from 0 to N) using default dict
+    normalised_edges = [(tbl[edge[0]], tbl[edge[1]]) for edge in edges]
+
+    graph = dgl.graph(normalised_edges)
+
     # Convert to a bi-directed DGL graph for undirected graphs
     if not params.gml.directed:
         graph = dgl.to_bidirected(graph)
+
+    # Save original node ids as a node attribute
+    graph.ndata['gml_id'] = torch.tensor(list(tbl.keys()))
     return graph
 
 

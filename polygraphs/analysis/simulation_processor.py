@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-from pathlib import Path, PosixPath
+from pathlib import Path, PosixPath, PurePath
 import warnings
 
 
@@ -20,6 +20,7 @@ class SimulationProcessor:
         self.include = include if include else {}
         self.exclude = exclude if exclude else {}
         self.config_check = config_check
+        self.initial_columns = ["bin_file_path", "hd5_file_path", "config_json_path"]
 
     def load_config(self, config_json_path):
         with open(config_json_path, "r") as f:
@@ -89,9 +90,7 @@ class SimulationProcessor:
             folders = [_, *[x for x in _.rglob("*/")]]
 
         # Initialize an empty DataFrame to store processed simulation data
-        result_df = pd.DataFrame(
-            columns=["bin_file_path", "hd5_file_path", "config_json_path"]
-        )
+        result_df = pd.DataFrame(columns=self.initial_columns)
 
         # Process each subfolder and concatenate the results into the result DataFrame
         for folder in folders:
@@ -109,6 +108,8 @@ class SimulationProcessor:
 
         # Store the aggregated DataFrame in the class attribute `self.dataframe`
         self.dataframe = result_df
+        self.format_known_column_types()
+        self.reorder_columns()
 
     def process_subfolder(self, subfolder_path):
         """
@@ -134,7 +135,7 @@ class SimulationProcessor:
 
         # Find base directory (UUID) of simulation directory in configuration file
         config_directory = config_data.get("simulation", {}).get("results", "")
-        config_base_dir = Path(config_directory).name
+        config_base_dir = PurePath(config_directory).parts[-1]
 
         # Check that the configuration file directory matches the directory name
         # if the config_check parameter is true skip directory
@@ -247,3 +248,32 @@ class SimulationProcessor:
             column_name = key_path.replace(".", "_").replace(" ", "")
             # Add values as a new column in the dataframe
             self.dataframe[column_name] = values
+            self.reorder_columns()
+
+    def reorder_columns(self):
+        """Moves file columns to end of DataFrame"""
+        new_column_order = [
+            col for col in self.dataframe.columns if col not in self.initial_columns
+        ] + self.initial_columns
+        self.dataframe = self.dataframe[new_column_order]
+
+    def format_known_column_types(self):
+        """Convert known column types"""
+        known_columns = {
+            "trials": "int",
+            "network_size": "int",
+            "steps": "int",
+            "network_kind": "category",
+            "op": "category",
+            "action": "category",
+            "undefined": "bool",
+            "converged": "bool",
+            "polarized": "bool"
+        }
+
+        for col, _type in known_columns.items():
+            if col in self.dataframe.columns:
+                try:
+                    self.dataframe[col] = self.dataframe[col].astype(_type)
+                except:
+                    pass
