@@ -6,6 +6,8 @@ examples/data/
 *.csv
 .vscode/
 .DS_Store
+images/
+
 TODO
 
 # Polygraphs Docs
