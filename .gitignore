@@ -7,7 +7,11 @@ examples/data/
 .vscode/
 .DS_Store
 images/
+<<<<<<< HEAD
 cd_images/
+=======
+.idea/
+>>>>>>> a1dee4b4d4115b47317cdd181982e55818bf6eb9
 
 TODO
 

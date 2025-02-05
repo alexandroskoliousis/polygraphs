@@ -2,7 +2,7 @@ import os
 from .graph_converter import GraphConverter, Graphs
 from .belief_processor import BeliefProcessor, Beliefs
 from .simulation_processor import SimulationProcessor
-
+from .utils import *
 
 # Cache data directory for all results
 _RESULTCACHE = os.getenv("POLYGRAPHS_CACHE") or "~/polygraphs-cache/results"
@@ -29,6 +29,7 @@ class Processor(SimulationProcessor):
     instances of Graphs and Beliefs classes. It then processes the simulations
     in the root folder path.
     """
+    normalise_gml = staticmethod(utils.normalise_gml)
 
     def __init__(
         self,
