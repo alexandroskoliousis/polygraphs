@@ -7,7 +7,7 @@ import gzip
 from urllib.parse import urljoin
 import numpy as np
 import torch
-import dgl
+import ptgraph
 
 from .dataset import PolyGraphDataset
 
@@ -61,7 +61,7 @@ class SNAPDataset(PolyGraphDataset):
 
     def read(self):
         """
-        Reads dataset into memory as DGL graph.
+        Reads dataset into memory as PTGRAPH graph.
         """
         # Fetch all dataset files
         self.fetchall()
@@ -70,8 +70,8 @@ class SNAPDataset(PolyGraphDataset):
         # representing edges from src[i] to dst[i]
         src, dst = self.__read_edges()
 
-        # Create DGL graph from edges
-        return dgl.graph(
+        # Create ptgraph from edges
+        return ptgraph.graph(
             (torch.Tensor(src).to(torch.int64), torch.Tensor(dst).to(torch.int64))
         )
 

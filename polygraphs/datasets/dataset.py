@@ -127,7 +127,8 @@ class PolyGraphDataset(metaclass=abc.ABCMeta):
         for _, value in six.iteritems(self.files):
             value.fetch(self.folder)
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def collection(self):
         """
         Returns collection to which dataset belongs (e.g. 'snap' or 'ogb').
@@ -137,6 +138,6 @@ class PolyGraphDataset(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read(self):
         """
-        Reads dataset into memory as a DGL graph.
+        Reads dataset into memory as a ptgraph.
         """
         raise NotImplementedError

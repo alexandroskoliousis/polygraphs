@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import numpy as np
 import torch
-import dgl
+import ptgraph
 import networkx as nx
 
 from .dataset import PolyGraphDataset
@@ -47,8 +47,8 @@ class FrancisBacon(PolyGraphDataset):
 
         # Load graph using edge list so that we preserve node ids
         edges = [torch.tensor((edge[0], edge[1])) for edge in list(nx.to_edgelist(G))]
-        graph = dgl.graph(edges)
-        # Convert to a bi-directed DGL graph because this is an undirected graph
-        graph = dgl.to_bidirected(graph)
+        graph = ptgraph.graph(edges)
+        # Convert to a bi-directed ptgraph because this is an undirected graph
+        graph = ptgraph.to_bidirected(graph)
 
         return graph

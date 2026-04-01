@@ -13,7 +13,7 @@ license = {text = "MIT License"}
 description = "Philosophical simulations on networks"
 readme = "README.md"
 keywords = ["philosophy", "epistemology", "simulation"]
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 dependencies = [
     "PyYaml",
     "pandas",
@@ -23,7 +23,7 @@ dependencies = [
     "networkx",
     "six",
     "torch",
-    "dgl"
+    "ptgraph @ git+https://github.com/polygraphs/ptgraph.git@main",
 ]
 
 [project.urls]

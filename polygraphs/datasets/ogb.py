@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import numpy as np
 import torch
-import dgl
+import ptgraph
 
 from .dataset import PolyGraphDataset
 from .utils import unzip
@@ -92,8 +92,8 @@ class Collab(PolyGraphDataset):
             weight = np.repeat(weight, 2, axis=0)
             tstamp = np.repeat(tstamp, 2, axis=0)
 
-        # Create a DGL graph
-        graph = dgl.graph((edges[0], edges[1]), num_nodes=num_nodes)
+        # Create a ptgraph
+        graph = ptgraph.graph((edges[0], edges[1]), num_nodes=num_nodes)
         # Set edge features
         graph.edata["w"] = torch.from_numpy(weight)
         graph.edata["t"] = torch.from_numpy(tstamp)

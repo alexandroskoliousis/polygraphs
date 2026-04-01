@@ -2,7 +2,7 @@
 Polygraph simulations and modules.
 """
 import torch
-import dgl
+import ptgraph
 import networkx as nx
 
 from . import core
@@ -231,7 +231,7 @@ class BalaGoyalWeightedOp(BalaGoyalOp):
         # Modify weights
         size = (graph.num_nodes(),)
 
-        G = dgl.to_networkx(dgl.remove_self_loop(graph))
+        G = ptgraph.to_networkx(ptgraph.remove_self_loop(graph))
         centrality = nx.degree_centrality(G)
         weights = torch.Tensor(list(centrality.values()))
 

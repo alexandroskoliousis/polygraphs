@@ -5,7 +5,7 @@ import sys
 import inspect
 import math
 import networkx as nx
-import dgl
+import ptgraph
 import numpy as np
 import os
 import torch
@@ -16,7 +16,7 @@ from . import datasets
 
 
 def _isconnected(graph):
-    return nx.is_strongly_connected(dgl.to_networkx(graph))
+    return nx.is_strongly_connected(ptgraph.to_networkx(graph))
 
 
 def _buckleup(graph, exist_ok=False):
@@ -27,11 +27,11 @@ def _buckleup(graph, exist_ok=False):
         # The number of edges in the given graph
         count = len(graph.edges())
         # Remove all self-loops in the graph, if present
-        graph = dgl.remove_self_loop(graph)
+        graph = ptgraph.remove_self_loop(graph)
         # Assert |E'| = |E|
         assert len(graph.edges()) == count
     # Add self-loops for each node in the graph and return a new graph
-    return dgl.transforms.add_self_loop(graph)
+    return ptgraph.transforms.add_self_loop(graph)
 
 
 def sample_(selfloop=True):
@@ -41,7 +41,7 @@ def sample_(selfloop=True):
     src = np.array([0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5])
     dst = np.array([2, 5, 2, 3, 4, 5, 0, 1, 3, 5, 1, 2, 4, 5, 1, 3, 0, 1, 2, 3])
 
-    graph = dgl.graph((src, dst))
+    graph = ptgraph.graph((src, dst))
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
@@ -64,7 +64,7 @@ def wheel_(size, selfloop=True):
     # Check network size
     assert size > 1
     # Get graph from networkx
-    graph = dgl.from_networkx(nx.wheel_graph(size))
+    graph = ptgraph.from_networkx(nx.wheel_graph(size))
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
@@ -87,7 +87,7 @@ def cycle_(size, directed=False, selfloop=True):
     # Get networkx constructor
     constructor = nx.DiGraph if directed else nx.Graph
     # Get graph from networkx
-    graph = dgl.from_networkx(nx.cycle_graph(size, create_using=constructor))
+    graph = ptgraph.from_networkx(nx.cycle_graph(size, create_using=constructor))
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
@@ -108,7 +108,7 @@ def star_(size, selfloop=True):
     # Check network size
     assert size > 1
     # Get graph from networkx. The graph has n + 1 nodes for integer n, so substract 1
-    graph = dgl.from_networkx(nx.star_graph(size - 1))
+    graph = ptgraph.from_networkx(nx.star_graph(size - 1))
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
@@ -131,7 +131,7 @@ def line_(size, directed=False, selfloop=True):
     # Get networkx constructor
     constructor = nx.DiGraph if directed else nx.Graph
     # Get graph from networkx
-    graph = dgl.from_networkx(nx.path_graph(size, create_using=constructor))
+    graph = ptgraph.from_networkx(nx.path_graph(size, create_using=constructor))
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
@@ -155,7 +155,7 @@ def grid_(size, selfloop=True):
     assert size == math.pow(int(math.sqrt(size) + 0.5), 2)
     rows = columns = int(math.sqrt(size))
     # Get graph from networkx
-    graph = dgl.from_networkx(nx.grid_2d_graph(rows, columns))
+    graph = ptgraph.from_networkx(nx.grid_2d_graph(rows, columns))
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
@@ -183,7 +183,7 @@ def random_(size, probability, tries=100, seed=None, directed=False, selfloop=Tr
     while True:
         attempt += 1
         # Get graph from networkx
-        graph = dgl.from_networkx(
+        graph = ptgraph.from_networkx(
             nx.erdos_renyi_graph(size, probability, seed=seed, directed=directed)
         )
         if _isconnected(graph):
@@ -229,7 +229,7 @@ def complete_(size, selfloop=True):
     # Check network size
     assert size > 1
     # Get graph from networkx
-    graph = dgl.from_networkx(nx.complete_graph(size))
+    graph = ptgraph.from_networkx(nx.complete_graph(size))
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
@@ -248,7 +248,7 @@ def karate_(selfloop=True):
     Returns Zachary's Karate club social network.
     """
     # Get graph from networkx
-    graph = dgl.from_networkx(nx.karate_club_graph())
+    graph = ptgraph.from_networkx(nx.karate_club_graph())
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
@@ -278,7 +278,7 @@ def wattsstrogatz_(
     if not seed:
         seed = np.random
     # Get graph from networkx
-    graph = dgl.from_networkx(
+    graph = ptgraph.from_networkx(
         nx.connected_watts_strogatz_graph(
             size, knn, probability, tries=tries, seed=seed
         )
@@ -315,7 +315,7 @@ def barabasialbert_(size, attachments, seed=None, selfloop=True):
     if not seed:
         seed = np.random
     # Get graph from networkx
-    graph = dgl.from_networkx(nx.barabasi_albert_graph(size, attachments, seed=seed))
+    graph = ptgraph.from_networkx(nx.barabasi_albert_graph(size, attachments, seed=seed))
     # Try adding self-loops
     if selfloop:
         graph = _buckleup(graph)
@@ -405,11 +405,11 @@ def gml(params):
     # Normalise node identifiers (from 0 to N) using default dict
     normalised_edges = [(tbl[edge[0]], tbl[edge[1]]) for edge in edges]
 
-    graph = dgl.graph(normalised_edges)
+    graph = ptgraph.graph(normalised_edges)
 
-    # Convert to a bi-directed DGL graph for undirected graphs
+    # Convert to a bi-directed ptgraph for undirected graphs
     if not params.gml.directed:
-        graph = dgl.to_bidirected(graph)
+        graph = ptgraph.to_bidirected(graph)
 
     # Save original node ids as a node attribute
     graph.ndata['gml_id'] = torch.tensor(list(tbl.keys()))
@@ -426,5 +426,5 @@ def create(params):
     constructor = members.get(params.kind)
     if constructor is None:
         raise Exception(f"Invalid graph type: {params.kind}")
-    # Construct DGL graph
+    # Construct ptgraph
     return constructor(params=params)

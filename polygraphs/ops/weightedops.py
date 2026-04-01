@@ -1,4 +1,4 @@
-import dgl
+import ptgraph
 import torch
 import networkx as nx
 
@@ -18,7 +18,7 @@ class BalaGoyalWeightedOp(common.BalaGoyalOp):
         # Modify weights
         size = (graph.num_nodes(),)
 
-        G = dgl.to_networkx(dgl.remove_self_loop(graph))
+        G = ptgraph.to_networkx(ptgraph.remove_self_loop(graph))
         centrality = nx.degree_centrality(G)
         weights = torch.Tensor(list(centrality.values()))
 
@@ -37,7 +37,7 @@ class BalaGoyalWeighted2Op(common.BalaGoyalOp):
         # Modify weights
         size = (graph.num_nodes(),)
 
-        G = dgl.to_networkx(dgl.remove_self_loop(graph))
+        G = ptgraph.to_networkx(ptgraph.remove_self_loop(graph))
         centrality = nx.degree_centrality(G)
         weights = torch.Tensor(list(centrality.values()))
 

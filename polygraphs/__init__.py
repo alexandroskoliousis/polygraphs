@@ -8,7 +8,7 @@ import random as rnd
 import collections
 import json
 
-import dgl
+import ptgraph
 import torch
 import numpy as np
 
@@ -101,9 +101,9 @@ def _storegraph(params, graph, prefix):
         return
     # Ensure destination directory exists
     assert os.path.isdir(params.simulation.results)
-    # Export DGL graph in binary format
-    fname = os.path.join(params.simulation.results, f"{prefix}.bin")
-    dgl.save_graphs(fname, [graph])
+    # Export graph in pytorch format
+    fname = os.path.join(params.simulation.results, f"{prefix}.pt")
+    ptgraph.save_graphs(fname, [graph])
     # Export DGL graph as JPEG
     #
     # Important note:
@@ -126,7 +126,7 @@ def random(seed=0):
     # Set Python RNG
     rnd.seed(seed)
     # Set GDL RNG
-    dgl.random.seed(seed)
+    ptgraph.random.seed(seed)
 
 
 def explore(params, explorables):
@@ -206,7 +206,7 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
     # Run multiple simulations and collect results
     for idx in range(params.simulation.repeats):
         log.debug("Simulation #{:04d} starts".format(idx + 1))
-        # Create a DGL graph with given configuration
+        # Create a ptgraph with given configuration
         graph = graphs.create(params.network)
         # Set device for graph
         graph = graph.to(device=params.device)
