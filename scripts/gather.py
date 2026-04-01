@@ -16,37 +16,12 @@ import networkx as nx
 from pathlib import Path
 import argparse
 
-# For progress bars
-from tqdm.autonotebook import tqdm
-
 # For access to cached results
 from fsspec.implementations.local import LocalFileSystem
 
 # Import polygraphs
 from polygraphs import hyperparameters as hp
 from polygraphs import metadata
-
-# Progress bar(s) #####
-
-
-# Default `tqdm` progress bar format
-_tfmt = None
-
-
-# Default `tqdm` progress bar arguments
-_targs = {
-    "bar_format": _tfmt,
-    "unit_scale": True,
-    "colour": "green",
-    "unit": "experiments",
-}
-
-
-def tbar(total, **kwargs):
-    """
-    Returns a `tqdm` progress bar.
-    """
-    return tqdm(total=total, **{**_targs, **kwargs})
 
 
 # File management #####
@@ -397,9 +372,6 @@ for net, lst in networks.items():
 
     print(f"{len(lst):5d} results for {net} networks")
 
-    # Create progress bar
-    pbar = tbar(len(lst))
-
     collection = deque()
 
     # Metadata extractor for current network kind
@@ -418,7 +390,9 @@ for net, lst in networks.items():
         # Add column for reliability hyper-parameter
         cols.extend(["reliability"])
 
-    for result in lst:
+    for i, result in enumerate(lst):
+
+        print(f"  Processing experiment {i + 1}/{len(lst)}: {result}")
 
         # Read results
         data = pd.read_csv(result)
@@ -458,16 +432,6 @@ for net, lst in networks.items():
         # Reorder columns
         data = data[cols]
 
-        # There should be as many .bin files as rows in data:
-        # E.g.:
-        #
-        #    001.bin
-        #    002.bin
-        #    ...
-        #    100.bin
-        #
-        # for 100 rows
-
         # Directory where graphs are stored
         directory, _ = os.path.split(result)
 
@@ -482,14 +446,14 @@ for net, lst in networks.items():
         # File paths
         f = []
 
-        subbar = tbar(count, position=0, leave=True, colour="red", unit="simulations")
-
         for idx in range(count):
+
+            print(f"    Simulation {idx + 1}/{count}", end="\r")
 
             filename = f"{{:0{digits}}}.bin".format(idx + 1)
             filepath = os.path.join(directory, filename)
             assert os.path.exists(filepath), f"File not found: {filepath}"
-            
+
             if args.statistics:
                 # Load graph from file
                 graphs, _ = dgl.load_graphs(filepath)
@@ -511,7 +475,7 @@ for net, lst in networks.items():
             # Collect paths to graphs
             f.append(os.path.relpath(filepath, start=args.results[0]))
 
-            subbar.update()
+        print()  # newline after \r progress
 
         # Add graph analytics to result
         data["density"] = d
@@ -520,8 +484,6 @@ for net, lst in networks.items():
 
         # Keep results
         collection.append(metadata.PolyGraphSimulation.fromframe(data))
-
-        pbar.update()
 
     # Merge all results
     merged = metadata.merge(*collection)
