@@ -4,24 +4,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polygraphs"
-version = "0.0.22-alpha"
+version = "0.0.22a1"
 authors = [
     {name="Alexandros Koliousis", email="ak@akoliousis.com"},
     {name="Amil Mohanan", email="amil@mohanan.net"}
 ]
-license = {text = "MIT License"}
+license = "MIT"
 description = "Philosophical simulations on networks"
 readme = "README.md"
 keywords = ["philosophy", "epistemology", "simulation"]
 requires-python = ">=3.12"
 dependencies = [
-    "PyYaml",
+    "PyYAML",
     "pandas",
     "numpy",
     "h5py",
     "matplotlib",
     "networkx",
-    "six",
     "torch",
     "ptgraph @ git+https://github.com/polygraphs/ptgraph.git@main",
 ]
@@ -32,3 +31,6 @@ Documentation = "https://akoliousis.com/polygraphs/"
 
 [project.scripts]
 polygraphs = "polygraphs.run:run"
+
+[tool.setuptools.packages.find]
+include = ["polygraphs*"]
