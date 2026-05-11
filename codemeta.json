@@ -1,0 +1,141 @@
+{
+    "@context": "https://w3id.org/codemeta/3.0",
+    "applicationCategory": "SoftwareSourceCode,SoftwareApplication",
+    "author": [
+        {
+            "@type": "Person",
+            "@id": "https://github.com/alexandroskoliousis",
+            "familyName": "Koliousis",
+            "givenName": "Alexandros",
+            "email": "ak@akoliousis.com"
+        },
+        {
+            "@type": "Person",
+            "@id": "https://github.com/amil-m",
+            "familyName": "Mohanan",
+            "givenName": "Amil",
+            "email": "amil@mohanan.net"
+        },
+        {
+            "@id": "https://orcid.org/0000-0003-2478-6151",
+            "@type": "Person",
+            "affiliation": {
+                "name": "Northeastern University, London",
+                "@type": "Organization"
+            },
+            "familyName": "Ball",
+            "givenName": "Brian",
+            "email": "brian.ball@nulondon.ac.uk"
+        },
+        {
+            "@type": "Person",
+            "@id": "https://github.com/Prudhvivuda",
+            "familyName": "Vuda",
+            "givenName": "Prudhvi"
+        },
+        {
+            "@type": "Person",
+            "@id": "https://github.com/sudopluto",
+            "familyName": "Sharma",
+            "givenName": "Pranav"
+        },
+        {
+            "@type": "Person",
+            "@id": "https://github.com/PujithaSaiTulasi",
+            "familyName": "Muddhu",
+            "givenName": "Pujitha Sai Tulasi"
+        }
+    ],
+    "codeRepository": "https://github.com/alexandroskoliousis/polygraphs",
+    "dateCreated": "2021-04-16",
+    "description": "Philosophical simulations (epistemology)",
+    "identifier": "polygraphs",
+    "keywords": [
+        "philosophy",
+        "epistemology",
+        "simulation"
+    ],
+    "license": "https://spdx.org/licenses/MIT",
+    "name": "polygraphs",
+    "programmingLanguage": [
+        "Python",
+        "Jupyter Notebook"
+    ],
+    "referencePublication": [
+        {
+            "author": [
+                {
+                    "affiliation": {
+                        "name": "Northeastern University, London",
+                        "@type": "Organization"
+                    },
+                    "email": "brian.ball@nulondon.ac.uk",
+                    "familyName": "Ball",
+                    "givenName": "Brian",
+                    "@id": "https://orcid.org/0000-0003-2478-6151",
+                    "@type": "Person"
+                },
+                {
+                    "affiliation": {
+                        "name": "Northeastern University, London",
+                        "@type": "Organization"
+                    },
+                    "familyName": "Koliousis",
+                    "givenName": "Alexandros",
+                    "@type": "Person"
+                },
+                {
+                    "affiliation": {
+                        "name": "University of Bristol",
+                        "@type": "Organization"
+                    },
+                    "familyName": "Peacey",
+                    "givenName": "Mike",
+                    "@type": "Person"
+                }
+            ],
+            "datePublished": "2024-01-31",
+            "identifier": "https://doi.org/10.1057/s41599-024-02619-z",
+            "name": "Computational philosophy: reflections on the PolyGraphs project",
+            "url": "https://www.nature.com/articles/s41599-024-02619-z",
+            "@type": "ScholarlyArticle"
+        }
+    ],
+    "softwareRequirements": [
+        {
+            "name": "python",
+            "version": "3.11"
+        },
+        "jupyterlab",
+        {
+            "name": "tqdm",
+            "version": "4.64.1"
+        },
+        "ipywidgets",
+        {
+            "name": "pytorch",
+            "version": "2.2.0"
+        },
+        "seaborn",
+        "pyyaml",
+        {
+            "name": "dgl",
+            "version": "2.1.0"
+        },
+        "numpy",
+        "networkx",
+        "six",
+        "torch",
+        {
+            "name": "setuptools",
+            "version": ">=61.0"
+        },
+        "notebook"
+    ],
+    "codemeta:contIntegration": {
+        "@id": "https://raw.githubusercontent.com/alexandroskoliousis/polygraphs/main/.github/workflows/deploy.yml"
+    },
+    "continuousIntegration": "https://raw.githubusercontent.com/alexandroskoliousis/polygraphs/main/.github/workflows/deploy.yml",
+    "issueTracker": "https://github.com/alexandroskoliousis/polygraphs/issues",
+    "@type": "SoftwareSourceCode"
+}
