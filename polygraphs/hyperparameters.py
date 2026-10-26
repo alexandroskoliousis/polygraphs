@@ -1,6 +1,7 @@
 """
 Hyper-parameter settings for PolyGraph simulations
 """
+
 import os
 import itertools
 import copy
@@ -155,9 +156,7 @@ class HyperParameters:
             yaml.dump(self.ht, fstream, Dumper=yaml.CDumper)
         return filename
 
-    def toJSON(
-        self, directory=None, filename=None, exists_ok=False
-    ):  # pylint: disable=invalid-name
+    def toJSON(self, directory=None, filename=None, exists_ok=False):  # pylint: disable=invalid-name
         """
         Writes hyper-parameters to a .json file.
         """
@@ -470,6 +469,8 @@ class PolyGraphHyperParameters(HyperParameters):
         self.add(reliability=1.0)
         self.add(trust=0.0)
         self.add(unreliablenodes=[])
+        self.add(sampler=None)
+        self.add(updating=None)
 
         # Parameters related to belief initilisation
         self.add(init=InitHyperParameters())
