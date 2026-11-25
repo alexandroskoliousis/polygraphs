@@ -1,7 +1,7 @@
 """
 Complex ops that contain unreliable nodes
 """
-
+from dataclasses import dataclass
 import torch
 from . import math
 from .. import init
@@ -21,6 +21,11 @@ class UnreliableOp(BalaGoyalOp):
 
     Upon receipt, all nodes apply Bayes rule.
     """
+
+    @dataclass
+    class Record: # pyright: ignore[reportIncompatibleVariableOverride]
+        """Defines additional fields for CSV."""
+        reliability: float    
 
     def __init__(self, graph, params):
         super().__init__(graph, params)
@@ -58,6 +63,11 @@ class UnreliableOp(BalaGoyalOp):
         u = self._unreliable_sampler.sample()
         # Combine samples
         return b * self._reliability + u * (1 - self._reliability)
+
+    def record(self, graph):
+        return self.Record(
+            reliability=self._network_reliability
+        )    
 
 
 class UnreliableNetworkIdealOp(UnreliableOp):
