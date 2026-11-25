@@ -4,6 +4,7 @@ PolyGraph module
 import os
 import uuid
 import datetime
+import dataclasses
 import random as rnd
 import collections
 import json
@@ -173,16 +174,10 @@ def explore(params, explorables):
     return results
 
 
-@torch.no_grad()
-def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
+def _resolve_op(params, op):
     """
-    Runs a PolyGraph simulation multiple times.
-
-    Args:
-        params: PolyGraph hyper-parameters
-        obj:    PolyGraph op
+    Returns the PolyGraph operator.
     """
-    assert isinstance(params, hparams.PolyGraphHyperParameters)
     # Check that either params.op is set, or op is set,
     # but never both (unless they are the same)
     if (params.op is None) == (op is None):
@@ -196,13 +191,49 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
         op = ops.getbyname(params.op)
     else:
         # Set operator name in hyper-parameters for future reference
-        params.op = op.__name__
+        params.op = op.__name__    
+    return op
+
+
+def _record_type(op):
+    """
+    Returns the dataclass an operator uses to record its results.
+    Extendes the Record dataclass from the op with the default
+    SimulationRecord dataclass if provided.
+    """
+    op_record = getattr(op, "Record")
+    # Combine datacalass if Record provided by op
+    if op_record:
+        return dataclasses.make_dataclass(
+            "SimulationResult",
+            [],
+            bases=(op_record, metadata.SimulationRecord),
+            frozen=True)
+    return metadata.SimulationRecord
+
+
+@torch.no_grad()
+def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
+    """
+    Runs a PolyGraph simulation multiple times.
+
+    Args:
+        params: PolyGraph hyper-parameters
+        obj:    PolyGraph op
+    """
+    if not isinstance(params, hparams.PolyGraphHyperParameters):
+        raise TypeError("params must be PolyGraphHyperParameters")
+    op = _resolve_op(params, op)
     # Create result directory
     uid, params.simulation.results = _mkdir(params.simulation.results)
     # Store configuration parameters
     _storeparams(params)
-    # Collection of simulation results
-    results = metadata.PolyGraphSimulation(uid=uid, **meta)
+
+    # Resolve record type for results from op
+    record_type = _record_type(op)
+    results = metadata.PolyGraphSimulation(record_type, uid=uid, **meta)
+    repeats = params.simulation.repeats
+
     # Run multiple simulations and collect results
     for idx in range(params.simulation.repeats):
         log.debug("Simulation #{:04d} starts".format(idx + 1))
@@ -236,31 +267,23 @@ def simulate(params, op=None, **meta):  # pylint: disable=invalid-name
         result = simulate_(
             graph,
             model,
+            record_type,
             steps=params.simulation.steps,
-            mistrust=params.mistrust,
-            lowerupper=params.lowerupper,
-            upperlower=params.upperlower,
             hooks=hooks,
         )
-        results.add(*result)
+        results.add(result)
         log.info(
-            "Sim #{:04d}: "
-            "{:6d} steps "
-            "{:7.2f}s; "
-            "action: {:1s} "
-            "undefined: {:<1} "
-            "converged: {:<1} "
-            "polarized: {:<1} ".format(idx + 1, *result)
+            f"Sim #{idx + 1:04d}: {result.steps:6d} steps "
+            f"{result.duration:7.2f}s; action: {result.action:1s} "
+            f"undefined: {result.undefined:<1} converged: {result.converged:<1} "
         )
     # End repeats
-    # Store simulation results
+    # Store simulation results  
     _storeresult(params, results)
     return results
 
 
-def simulate_(
-    graph, model, steps=1, hooks=None, mistrust=0.0, lowerupper=0.5, upperlower=0.99
-):
+def simulate_(graph, model, record=metadata.SimulationRecord, steps=1, hooks=None):
     """
     Runs a simulation either for a finite number of steps or until convergence.
 
@@ -269,7 +292,7 @@ def simulate_(
             a) number of simulation steps
             b) wall-clock time
             c) whether the network has converged or not
-            d) whether the network is polarised or not
+            d) any other outcome_fields defined by the op
     """
 
     def cond(step):
@@ -278,7 +301,8 @@ def simulate_(
     clock = timer.Timer()
     clock.start()
     step = 0
-    terminated = None
+    action = "?"
+    
     while cond(step):
         step += 1
         # Forward operation on the graph
@@ -287,91 +311,30 @@ def simulate_(
         if hooks:
             for hook in hooks:
                 hook.mayberun(step, graph)
-        # Check termination conditions:
-        # - Are beliefs undefined (contain nan or inf)?
-        # - Has the network converged?
-        # - Is it polarised?
-        terminated = (
-            undefined(graph),
-            converged(graph, upperlower=upperlower, lowerupper=lowerupper),
-            polarized(
-                graph, upperlower=upperlower, lowerupper=lowerupper, mistrust=mistrust
-            ),
-        )
-        if any(terminated):
+        # Check termination conditions
+        if model.terminated(graph):
             break
+
+    undefined = model.undefined(graph)
+    converged = model.converged(graph)
+    
     duration = clock.dt()
-    if not terminated[0]:
+    if not undefined:
         # Proper exit
         if hooks:
             for hook in hooks:
                 hook.conclude(step, graph)
         # Which action did the network decide to take?
-        act = consensus(graph, lowerupper=lowerupper)
-    else:
-        # Beliefs are undefined, and so is the action
-        act = "?"
+        action = model.consensus(graph)
 
-    # Are beliefs undefined (contain nan or inf)?
-    # Has the network converged?
-    # Is it polarised?
-    # How many simulation steps were performed?
-    # How long did the simulation take?
-    return (
-        step,
-        duration,
-        act,
-    ) + terminated
+    # Get custom Record fields from op.record
+    additional_fields = dataclasses.asdict(model.record(graph))
 
-
-def undefined(graph):
-    """
-    Returns `True` is graph beliefs contain undefined values (`nan` or `inf`).
-    """
-    belief = graph.ndata["beliefs"]
-    result = torch.any(torch.isnan(belief)) or torch.any(torch.isinf(belief))
-    return result.item()
-
-
-def consensus(graph, lowerupper=0.99):
-    """
-    Returns action ('A', 'B', or '?') agreed by all agents in the network.
-    """
-    if converged(graph, lowerupper=lowerupper):
-        belief = graph.ndata["beliefs"]
-        return "B" if torch.all(torch.gt(belief, lowerupper)) else "A"
-    return "?"
-
-
-def converged(graph, upperlower=0.5, lowerupper=0.99):
-    """
-    Returns `True` if graph has converged.
-    """
-    tensor = graph.ndata["beliefs"]
-    result = torch.all(torch.gt(tensor, lowerupper)) or torch.all(
-        torch.le(tensor, upperlower)
+    return record(
+        steps=step,
+        duration=duration,
+        action=action,
+        undefined=undefined,
+        converged=converged,
+        **additional_fields,
     )
-    return result.item()
-
-
-def polarized(graph, mistrust=0.0, upperlower=0.5, lowerupper=0.99):
-    """
-    Returns `True` if graph is polarized.
-    """
-    # pylint: disable=invalid-name
-    if not mistrust:
-        return False
-    tensor = graph.ndata["beliefs"]
-    # All nodes have decided which action to take (e.g. A or B)
-    c = torch.all(torch.gt(tensor, lowerupper) | torch.le(tensor, upperlower))
-    # There is at least one strong believer
-    # that action B is better
-    b = torch.any(torch.gt(tensor, lowerupper))
-    # There is at least one disbeliever
-    a = torch.any(torch.le(tensor, upperlower))
-    if a and b and c:
-        delta = torch.min(tensor[torch.gt(tensor, lowerupper)]) - torch.max(
-            tensor[torch.le(tensor, upperlower)]
-        )
-        return torch.ge(delta * mistrust, 1).item()
-    return False
