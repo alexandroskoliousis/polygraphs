@@ -23,6 +23,15 @@ polygraphs -f test.yaml
 ### Installing from Source
 Advanced users can [install from source](https://akoliousis.com/polygraphs/guide/introduction/install-from-source), see the documentation for more details on running PolyGraphs on the [platform guide](https://akoliousis.com/polygraphs/guide/introduction/platform-guide).
 
+If you are usign uv, you can clone the repositoty initialse a virtual environment and use a previous compatible versions of Python, pytorch and dgl specified in `pyproject.toml`:
+
+```bash
+git clone https://github.com/alexandroskoliousis/polygraphs.git
+cd polygraphs
+uv venv
+uv run run.py -f configs/test.yaml
+```
+
 ## Analysing Simulation Results
 Results from simulations can be processed using the [analysis module](https://akoliousis.com/polygraphs/guide/simulations/processing-results). 
 

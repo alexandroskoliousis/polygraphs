@@ -1,6 +1,7 @@
 """
 Polygraph simulations and modules.
 """
+from dataclasses import dataclass
 import torch
 import dgl
 import networkx as nx
@@ -102,6 +103,11 @@ class OConnorWeatherallOp(core.PolyGraphOp):
     Scientific polarisation (O'Connor & Weatherall, 2018)
     """
 
+    @dataclass
+    class Record: # pyright: ignore[reportIncompatibleVariableOverride]
+        """Defines additional fields for CSV."""
+        polarized: bool
+        
     def __init__(self, graph, params):
         super().__init__(graph, params)
 
@@ -111,6 +117,33 @@ class OConnorWeatherallOp(core.PolyGraphOp):
 
         # Whether to discount evidence with unti-updating or not
         self.antiupdating = params.antiupdating
+
+    def polarized(self, graph):
+        """
+        Returns `True` if graph is polarized.
+        """
+        # pylint: disable=invalid-name
+        if not self.mistrust:
+            return False
+        tensor = graph.ndata["beliefs"]
+        # All nodes have decided which action to take (e.g. A or B)
+        c = torch.all(torch.gt(tensor, self.lowerupper) | torch.le(tensor, self.upperlower))
+        # There is at least one strong believer
+        # that action B is better
+        b = torch.any(torch.gt(tensor, self.lowerupper))
+        # There is at least one disbeliever
+        a = torch.any(torch.le(tensor, self.upperlower))
+        if a and b and c:
+            delta = torch.min(tensor[torch.gt(tensor, self.lowerupper)]) - torch.max(
+                tensor[torch.le(tensor, self.upperlower)]
+            )
+            return torch.ge(delta * self.mistrust, 1).item()
+        return False
+
+    def record(self, graph):
+        return self.Record(
+            polarized=self.polarized(graph)
+        )
 
     def filterfn(self):
         """

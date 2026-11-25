@@ -13,17 +13,19 @@ license = {text = "MIT License"}
 description = "Philosophical simulations on networks"
 readme = "README.md"
 keywords = ["philosophy", "epistemology", "simulation"]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "PyYaml",
     "pandas",
-    "numpy",
+    "numpy<2",
     "h5py",
     "matplotlib",
     "networkx",
     "six",
-    "torch",
-    "dgl"
+    "torch == 2.1",
+    "torchdata == 0.7.0",
+    "dgl ==  2.1.0",
+    "pydantic"
 ]
 
 [project.urls]

@@ -51,34 +51,29 @@ class Beliefs:
         self.beliefs = [None] * len(dataframe)
         self.index = 0
 
-    def __getitem__(self, index):
-        if index > len(self.beliefs):
-            raise IndexError("Simulation index out of range")
-        return self.get(index)
-
     def __len__(self):
         return len(self.beliefs)
 
-    def __iter__(self):
-        return self
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return [self.get(i) for i in range(*index.indices(len(self)))]
+        return self.get(index)
 
-    def __next__(self):
-        if self.index >= len(self.beliefs):
-            self.index = 0
-            raise StopIteration
-        value = self.get(self.index)
-        self.index += 1
-        return value
+    def __iter__(self):
+        for i in range(len(self)):
+            yield self.get(i)
 
     def get(self, index):
-        # Return a saved beliefs dataframe using its index or load from file
-        if self.beliefs[index] is not None:
-            return self.beliefs[index]
-        elif index < len(self.beliefs):
-            self.beliefs[index] = self.belief_processor.get_beliefs(
+        """Return the beliefs dataframe for a simulation, loading it if needed."""
+        try:
+            cached = self.beliefs[index]
+        except IndexError:
+            raise IndexError("Simulation index out of range") from None
+
+        if cached is None:
+            cached = self.belief_processor.get_beliefs(
                 self.hd5_file_path[index],
                 self.graphs[index],
             )
-            return self.beliefs[index]
-        else:
-            raise IndexError("Simulation index out of range")
+            self.beliefs[index] = cached
+        return cached

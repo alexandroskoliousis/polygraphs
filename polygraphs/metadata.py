@@ -1,40 +1,39 @@
 """
 A collection of metadata associated with PolyGraph simulations
 """
-import os
-from collections import deque
-import six
+from dataclasses import asdict, dataclass, fields, is_dataclass
+from pathlib import Path
+
 import pandas as pd
 
 
-_default_columns = (
-    "steps",
-    "duration",
-    "action",
-    "undefined",
-    "converged",
-    "polarized",
-)
+@dataclass(frozen=True)
+class SimulationRecord:
+    steps: int
+    duration: float
+    action: str
+    undefined: bool
+    converged: bool
 
 
-def merge(*results):
+def _metadata_columns(columns, uid, meta):
     """
-    Merge two or more instances of `PolyGraphSimulation` into a single data frame.
-    Optionally, write data frame to stream.
+    Returns {name: value} for the columns that are constant across a
+    collection (metadata and `uid`), after validating them against the
+    record's own `columns`.
     """
-    assert len(results) > 0
-    assert all(isinstance(result, PolyGraphSimulation) for result in results)
-    if len(results) > 1:
-        # Create list of data frames
-        frames = [result.frame for result in results]
-        # Assert all frames have the same columns
-        assert all(frames[0].columns.equals(frame.columns) for frame in frames[1:])
-        # Concat all frames
-        df = pd.concat(frames, ignore_index=True)  # pylint: disable=invalid-name
-        result = PolyGraphSimulation.fromframe(df)
-    else:
-        (result,) = results
-    return result
+    for key, value in meta.items():
+        if not isinstance(value, (int, float, bool, str)):
+            raise TypeError(f"metadata {key!r} must be int, float, bool or str")
+
+    metadata = dict(meta)
+    if uid is not None:
+        metadata["uid"] = uid
+
+    # A constant column would silently overwrite a real results column
+    if clash := set(columns) & set(metadata):
+        raise ValueError(f"names clash with record fields: {sorted(clash)}")
+    return metadata
 
 
 class PolyGraphSimulation:
@@ -51,79 +50,69 @@ class PolyGraphSimulation:
         obj._frame = frame  # pylint: disable=protected-access
         return obj
 
-    def __init__(self, *cols, uid=None, **meta):
-        # Column names
-        if not cols:
-            cols = _default_columns
-        assert cols and all(isinstance(column, str) for column in cols)
-        self._columns = cols
-        # Collection of simulation results
-        self._queue = deque()
-        # Metadata associated with collection
-        if meta:
-            # Ensure there are no duplicate columns
-            assert not any(column in meta for column in cols)
-            # Validate metadata values
-            assert all(
-                isinstance(value, (int, float, bool, str)) for value in meta.values()
+    def __init__(self, record=SimulationRecord, *, uid=None, **meta):
+        self._record = record
+        # Column field names returned for each sim from op
+        self._columns = tuple(f.name for f in fields(record))
+
+        # Metadata columns such as uid
+        self._metadata = _metadata_columns(self._columns, uid, meta)
+        self._results = []
+        self._frame = None  # cache
+
+    def __len__(self):
+        return len(self._results)
+
+    def __iter__(self):
+        return iter(self._results)        
+
+    @property
+    def record(self):
+        """The dataclass type of the results in this collection."""
+        return self._record
+
+    def add(self, result):
+        """Adds a single result, which must be an instance of `record`."""
+        if not isinstance(result, self._record):
+            raise TypeError(
+                f"expected {self._record.__name__}, got {type(result).__name__}"
             )
-        self._meta = meta
-        # Experiment unique identifier
-        self._uid = uid
-        # Data frame of simulation results. Once results are converted
-        # to a data frame, the collection becomes read-only.
+        self._results.append(result)
         self._frame = None
+
+    def extend(self, results):
+        """Adds every result in an iterable."""
+        for result in results:
+            self.add(result)        
 
     @property
     def frame(self):
-        """
-        Returns data frame of PolyGraph simulation results.
-        """
-        return self._export()
-
-    def _export(self):
-        """
-        Exports collection or results to a data frame.
-        """
+        """Data frame of results, with metadata appended as columns."""
         if self._frame is None:
-            # Create data frame from collection
-            self._frame = pd.DataFrame(self._queue, columns=self._columns)
-            if self._meta:
-                # Append metadata as new columns
-                for key, value in six.iteritems(self._meta):
-                    self._frame[key] = value
-            if self._uid:
-                # Append uuid as a new column
-                self._frame["uid"] = self._uid
+            df = pd.DataFrame(
+                [asdict(r) for r in self._results], columns=list(self._columns)
+            )
+            for key, value in self._metadata.items():
+                df[key] = value
+            self._frame = df
         return self._frame
 
-    def add(self, *values):
-        """
-        Adds a PolyGraph simulation result to the current collection.
-        Note that column order follows order in values.
-        """
-        # Do not add new results once collection has been exported
-        assert self._frame is None
-        # Ensure that number of values equals number of columns
-        assert len(self._columns) == len(values)
-        self._queue.append(values)
+    def store(self, directory, filename="data.csv", *, overwrite=True):
+        """Stores the collection to a csv file."""
+        path = Path(directory, filename)
+        if path.exists() and not overwrite:
+            raise FileExistsError(path)
+        self.frame.to_csv(path, index=False)
 
-    def store(self, directory=None, filename=None, overwrite_ok=True):
-        """
-        Stores collection to disk.
-        """
-        if filename is None:
-            destination = "data.csv"
-        else:
-            destination = filename
-        if directory is not None:
-            # Ensure that the output directory exists
-            assert os.path.isdir(directory)
-            # Set destination path
-            destination = os.path.join(directory, destination)
-        # Check for overwrites
-        assert not (not overwrite_ok and os.path.exists(destination))
-        # Export collection to data frame
-        _ = self._export()
-        # Store data frame to a csv file
-        self._frame.to_csv(destination, index=False)
+
+def merge(*simulations):
+    """
+    Merges two or more `PolyGraphSimulation` instances into a single data frame.
+    All simulations must produce the same columns.
+    """
+    if not simulations:
+        raise ValueError("nothing to merge")
+    frames = [sim.frame for sim in simulations]
+    if not all(frames[0].columns.equals(f.columns) for f in frames[1:]):
+        raise ValueError("simulations have different columns")
+    return pd.concat(frames, ignore_index=True)

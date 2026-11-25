@@ -92,19 +92,23 @@ class SimulationProcessor:
         # Initialize an empty DataFrame to store processed simulation data
         result_df = pd.DataFrame(columns=self.initial_columns)
 
-        # Process each subfolder and concatenate the results into the result DataFrame
+        # Process each subfolder and concatenate the results
+        frames = []
         for folder in folders:
             try:
                 subfolder_df = self.process_subfolder(folder)
                 # Add folder if we get a dataframe with simulations
                 if isinstance(subfolder_df, pd.DataFrame):
-                    result_df = pd.concat(
-                        [result_df, subfolder_df.dropna(axis=1, how="all")],
-                        ignore_index=True,
-                    )
+                    frames.append(subfolder_df.dropna(axis=1, how="all"))
             except (FileNotFoundError, PermissionError) as e:
                 # Handle exceptions if there are issues accessing folders
                 warnings.warn(f"Error accessing folder: {e}", RuntimeWarning)
+
+        # Concatenate once; columns missing from some frames become NaN
+        if frames:
+            result_df = pd.concat(frames, ignore_index=True)
+        else:
+            result_df = pd.DataFrame(columns=self.initial_columns)
 
         # Store the aggregated DataFrame in the class attribute `self.dataframe`
         self.dataframe = result_df
@@ -206,7 +210,7 @@ class SimulationProcessor:
         else:
             # If CSV file doesn't exist, set the corresponding columns to None
             df[
-                ["steps", "duration", "action", "undefined", "converged", "polarized"]
+                ["steps", "duration", "action", "undefined", "converged"]
             ] = None
             # Extract unique identifier (UID) from the subfolder path
             df["uid"] = subfolder_path.name
@@ -258,22 +262,27 @@ class SimulationProcessor:
         self.dataframe = self.dataframe[new_column_order]
 
     def format_known_column_types(self):
-        """Convert known column types"""
-        known_columns = {
-            "trials": "int",
-            "network_size": "int",
-            "steps": "int",
+        """Cast known columns to their expected dtypes."""
+        KNOWN_COLUMN_TYPES = {
+            "trials": "Int64",
+            "network_size": "Int64",
+            "steps": "Int64",
             "network_kind": "category",
             "op": "category",
             "action": "category",
-            "undefined": "bool",
-            "converged": "bool",
-            "polarized": "bool"
+            "undefined": "boolean",
+            "converged": "boolean",
+            "polarized": "boolean",
+        }
+    
+        present = {
+            col: dtype
+            for col, dtype in KNOWN_COLUMN_TYPES.items()
+            if col in self.dataframe.columns
         }
 
-        for col, _type in known_columns.items():
-            if col in self.dataframe.columns:
-                try:
-                    self.dataframe[col] = self.dataframe[col].astype(_type)
-                except:
-                    pass
+        for col, dtype in present.items():
+            try:
+                self.dataframe[col] = self.dataframe[col].astype(dtype)
+            except (ValueError, TypeError) as exc:
+                logger.warning("Could not convert column %r to %s: %s", col, dtype, exc)
